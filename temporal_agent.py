@@ -1,8 +1,12 @@
+from random import randint
+
 import read_problems
 import numpy as np
 
 from nupic.research.TP import TP
 from nupic.research.temporal_memory import TemporalMemory as TM
+
+
 def create_SDR(problem, problem_attributes, SDR, match=True):
 	if match:
 		if type(problem_attributes) is dict:
@@ -21,17 +25,19 @@ def create_SDR(problem, problem_attributes, SDR, match=True):
 		else:
 			SDR.extend([0] * len(problem_attributes))
 
+
 def run_solver_TP(problems, param):
+	m = len(problems)
 	SDRlen = len(problems[0]['SDRs']['input'][0])
 	results = []
 	tp = TP(numberOfCols=SDRlen, cellsPerColumn=param[0],
-				initialPerm=param[1], connectedPerm=param[2],
-				minThreshold=param[3], newSynapseCount=param[4],
-				permanenceInc=param[5], permanenceDec=param[6],
-				activationThreshold=param[7],
-				globalDecay=0, burnIn=1,
-				checkSynapseConsistency=False,
-				pamLength=10)
+			initialPerm=param[1], connectedPerm=param[2],
+			minThreshold=param[3], newSynapseCount=param[4],
+			permanenceInc=param[5], permanenceDec=param[6],
+			activationThreshold=param[7],
+			globalDecay=0, burnIn=1,
+			checkSynapseConsistency=False,
+			pamLength=10)
 
 	matches = 0
 	for problem in problems:
@@ -45,16 +51,19 @@ def run_solver_TP(problems, param):
 		
 		match = [np.sum(np.logical_and(x, predictedCells)) for x in problem['SDRs']['output']]
 		
-		vote = match.index(max(match))
+		vote = match.index(max(match)) + 1
 		results.append(vote)
+		#print problem['title'], vote, problem['result']
 
-	return results
+	return sum([results[i] == problems[i]['result'] for i in range(m)])
+
 
 def run_solver_TM(problems, param):
+	m = len(problems)
 	SDRlen = len(problems[0]['SDRs']['input'][0])
 	results = []
 	if len(param) != 8:
-		print param
+		print(param)
 	tm = TM(numberOfCols=SDRlen, cellsPerColumn=param[0],
 				initialPerm=param[1], connectedPerm=param[2],
 				minThreshold=param[3], newSynapseCount=param[4],
@@ -78,13 +87,41 @@ def run_solver_TM(problems, param):
 				predict[x] = 1
 			match = [np.sum(np.logical_and(x, predict)) for x in problem['SDRs']['output']]
 		
-			vote = match.index(max(match))
+			vote = match.index(max(match)) + 1
 		else:
-			vote = -1
+			vote = 0
 		results.append(vote)
 
-	return results
+	return sum([results[i] == problems[i]['result'] for i in range(m)])
 
+
+def local_search(problems, algorithm, initial_param):
+	"""Simulated annealing"""
+	best_result = algorithm(problems, initial_param)
+	best_param = initial_param
+	steps = [1, 0.1, 0.1, 1, 1, 0.1, 0.1, 1]
+	limits = [(1, 64), (0.1, 1), (0.1, 1), (1, 64), (1, 64), (0.1, 1), (0.1, 1), (1, 64)]
+	probability = 4.0
+	effort = 100
+	while effort != 0:
+		effort -= 1
+		for i in range(len(best_param)):
+			for sign in [1, -1]:
+				x = best_param[i] + sign * steps[i]
+				if  x >= limits[i][0] and x <= limits[i][1]:
+					new_param = best_param[:i] + ((best_param[i] + sign * steps[i]),) + best_param[i + 1:]
+
+					result = algorithm(problems, new_param)
+					if result > best_result:
+						best_param = new_param
+						best_result = result
+					else:
+						r = randint(0, 100)
+						if r < 100 / probability:
+							probability += 0.5
+							best_param = new_param
+							best_result = result
+	return best_result, best_param
 
 def find_optimal_param(problems, algorithm):
 	SDRlen = len(problems[0]['SDRs']['input'][0])
@@ -93,16 +130,16 @@ def find_optimal_param(problems, algorithm):
 				minThreshold, newSynapseCount, 
 				permanenceInc / 10.0, permanenceDec /10.0,
 				activationThreshold)
-				for activationThreshold in range(1, 9, 3)
-				for minThreshold in range(2, 9, 3)
-				for cellsPerColumn in range(2, 16, 4)
-				for initialPerm in range(1, 9, 4)
-				for connectedPerm in range(1, 9, 4)
-				for newSynapseCount in range(2, 16, 8)
-				for permanenceInc in range(1, 9, 4)
-				for permanenceDec in range(1, 9, 4)]
+				for activationThreshold in range(1, 32, 8)
+				for minThreshold in range(2, activationThreshold, 8)
+				for cellsPerColumn in range(2, 32, 8)
+				for initialPerm in range(1, 9, 3)
+				for connectedPerm in range(1, 9, 3)
+				for newSynapseCount in range(2, 32, 8)
+				for permanenceInc in range(1, 9, 3)
+				for permanenceDec in range(1, 9, 3)]
 
-	print len(params)
+	print(len(params))
 
 	matches_list = []
 	max_matches = 0
@@ -110,8 +147,7 @@ def find_optimal_param(problems, algorithm):
 	index = 0.0
 	
 	for param in params:
-		results = algorithm(problems, param)
-		matches = sum([results[i] == problems[i]['result'] for i in range(m)])
+		matches = algorithm(problems, param)
 
 		index += 1
 		matches_list.append(matches)
@@ -144,10 +180,12 @@ def run():
 				index += 1
 	m = len(problems)
 	param = find_optimal_param(problems, algorithm)
-	print param
-	results = algorithm(problems, param)
-	matches = sum([results[i] == problems[i]['result'] for i in range(m)])
-	print(matches)
+	#param = (10, 0.1, 0.1, 2, 10, 0.1, 0.1, 4)
+	result = algorithm(problems, param)
+	print(result, param)
+	#result, param = local_search(problems, algorithm, param)
+	#print(result, param)
+	
 
 
 if __name__ == "__main__":
