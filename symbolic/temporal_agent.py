@@ -30,6 +30,7 @@ def run_solver_TP(problems, param):
 	m = len(problems)
 	SDRlen = len(problems[0]['SDRs']['input'][0])
 	results = []
+	matches = 0
 	tp = TP(numberOfCols=SDRlen, cellsPerColumn=param[0],
 			initialPerm=param[1], connectedPerm=param[2],
 			minThreshold=param[3], newSynapseCount=param[4],
@@ -38,13 +39,11 @@ def run_solver_TP(problems, param):
 			globalDecay=0, burnIn=1,
 			checkSynapseConsistency=False,
 			pamLength=10)
-
-	matches = 0
 	for problem in problems:
 		tp.compute(problem['SDRs']['input'][0], enableLearn = True, computeInfOutput = False)
 		tp.compute(problem['SDRs']['input'][1], enableLearn = True, computeInfOutput = False)
 
-		tp.compute(problem['SDRs']['input'][2], enableLearn = False, computeInfOutput = True)
+		tp.compute(problem['SDRs']['input'][2], enableLearn = True, computeInfOutput = True)
 		
 		predictedCells = tp.getPredictedState()
 		predictedCells = [sum(x) for x in predictedCells]
@@ -53,7 +52,9 @@ def run_solver_TP(problems, param):
 		
 		vote = match.index(max(match)) + 1
 		results.append(vote)
-		#print problem['title'], vote, problem['result']
+		tp.compute(problem['SDRs']['output'][vote], enableLearn = True, computeInfOutput = False)
+		#if vote == problem['result']:
+		#	print problem['title'], vote, problem['result']
 
 	return sum([results[i] == problems[i]['result'] for i in range(m)])
 
@@ -78,7 +79,7 @@ def run_solver_TM(problems, param):
 		tm.compute(problem['SDRs']['input'][0], learn = True)
 		tm.compute(problem['SDRs']['input'][1], learn = True)
 
-		tm.compute(problem['SDRs']['input'][2], learn = False)
+		tm.compute(problem['SDRs']['input'][2], learn = True)
 		
 		predictedCells = tm.getPredictiveCells()
 		if predictedCells:
@@ -90,6 +91,7 @@ def run_solver_TM(problems, param):
 			vote = match.index(max(match)) + 1
 		else:
 			vote = 0
+		tm.compute(problem['SDRs']['output'][problem['result'] - 1], learn = True)
 		results.append(vote)
 
 	return sum([results[i] == problems[i]['result'] for i in range(m)])
@@ -130,14 +132,14 @@ def find_optimal_param(problems, algorithm):
 				minThreshold, newSynapseCount, 
 				permanenceInc / 10.0, permanenceDec /10.0,
 				activationThreshold)
-				for activationThreshold in range(1, 32, 8)
+				for activationThreshold in range(1, 16, 8)
 				for minThreshold in range(2, activationThreshold, 8)
-				for cellsPerColumn in range(2, 32, 8)
-				for initialPerm in range(1, 9, 3)
-				for connectedPerm in range(1, 9, 3)
-				for newSynapseCount in range(2, 32, 8)
-				for permanenceInc in range(1, 9, 3)
-				for permanenceDec in range(1, 9, 3)]
+				for cellsPerColumn in range(2, 16, 8)
+				for initialPerm in range(1, 9, 4)
+				for connectedPerm in range(1, 9, 4)
+				for newSynapseCount in range(2, 16, 8)
+				for permanenceInc in range(1, 9, 4)
+				for permanenceDec in range(1, 9, 4)]
 
 	print(len(params))
 
@@ -166,7 +168,7 @@ def find_optimal_param(problems, algorithm):
 def run():
 	algorithm = run_solver_TP
 	problems, problem_attributes = read_problems.get_problems()
-	SDRs = []
+	SDRs = []	
 	for problem in problems:
 		problem['SDRs'] = {'input': [],
 						   'output': []}
@@ -179,6 +181,7 @@ def run():
 				problem['SDRs'][y].append(np.array(new_SDR))
 				index += 1
 	m = len(problems)
+	
 	param = find_optimal_param(problems, algorithm)
 	#param = (10, 0.1, 0.1, 2, 10, 0.1, 0.1, 4)
 	result = algorithm(problems, param)
