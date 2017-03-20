@@ -31,7 +31,8 @@ def run_solver_TP(problems, param):
 	SDRlen = len(problems[0]['SDRs']['input'][0])
 	results = []
 	matches = 0
-	tp = TP(numberOfCols=SDRlen, cellsPerColumn=param[0],
+	for problem in problems:
+		tp = TP(numberOfCols=SDRlen, cellsPerColumn=param[0],
 			initialPerm=param[1], connectedPerm=param[2],
 			minThreshold=param[3], newSynapseCount=param[4],
 			permanenceInc=param[5], permanenceDec=param[6],
@@ -39,7 +40,7 @@ def run_solver_TP(problems, param):
 			globalDecay=0, burnIn=1,
 			checkSynapseConsistency=False,
 			pamLength=10)
-	for problem in problems:
+	
 		tp.compute(problem['SDRs']['input'][0], enableLearn = True, computeInfOutput = False)
 		tp.compute(problem['SDRs']['input'][1], enableLearn = True, computeInfOutput = False)
 
@@ -48,14 +49,19 @@ def run_solver_TP(problems, param):
 		predictedCells = tp.getPredictedState()
 		predictedCells = [sum(x) for x in predictedCells]
 		
+
 		match = [np.sum(np.logical_and(x, predictedCells)) for x in problem['SDRs']['output']]
+		#print match
 		
-		vote = match.index(max(match)) + 1
+		max_matche = max(match)
+		vote = match.index(max_matche) + 1
+		#results.append((vote, max_matche))
 		results.append(vote)
 		tp.compute(problem['SDRs']['output'][vote], enableLearn = True, computeInfOutput = False)
 		#if vote == problem['result']:
-		#	print problem['title'], vote, problem['result']
+		#print problem['title'], vote, problem['result']
 
+	#return sum([(results[i][0] == problems[i]['result']) * results[i][1] for i in range(m)])
 	return sum([results[i] == problems[i]['result'] for i in range(m)])
 
 
@@ -166,7 +172,7 @@ def find_optimal_param(problems, algorithm):
 
 
 def run():
-	algorithm = run_solver_TP
+	algorithm = run_solver_TM
 	problems, problem_attributes = read_problems.get_problems()
 	SDRs = []	
 	for problem in problems:
@@ -183,9 +189,9 @@ def run():
 	m = len(problems)
 	
 	param = find_optimal_param(problems, algorithm)
-	#param = (10, 0.1, 0.1, 2, 10, 0.1, 0.1, 4)
-	result = algorithm(problems, param)
-	print(result, param)
+	#param =  (2, 0.1, 0.1, 2, 10, 0.1, 0.1, 9)
+	#result = algorithm(problems, param)
+	#print(result, param)
 	#result, param = local_search(problems, algorithm, param)
 	#print(result, param)
 	

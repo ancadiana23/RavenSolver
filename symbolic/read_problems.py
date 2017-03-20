@@ -47,7 +47,7 @@ def get_unique_attributes(problems):
 	return problem_attributes
 
 def get_problems():
-	problem_dir = "../problems"
+	problem_dir = "../Problems"
 	problems = []
 	
 	for folder in os.listdir(problem_dir):
