@@ -41,6 +41,7 @@ def run_solver_TP(problems, param):
 			checkSynapseConsistency=False,
 			pamLength=10)
 	
+		print type(problem['SDRs']['input'][0])
 		tp.compute(problem['SDRs']['input'][0], enableLearn = True, computeInfOutput = False)
 		tp.compute(problem['SDRs']['input'][1], enableLearn = True, computeInfOutput = False)
 
@@ -172,7 +173,7 @@ def find_optimal_param(problems, algorithm):
 
 
 def run():
-	algorithm = run_solver_TM
+	algorithm = run_solver_TP
 	problems, problem_attributes = read_problems.get_problems()
 	SDRs = []	
 	for problem in problems:

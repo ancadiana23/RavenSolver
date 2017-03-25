@@ -1,96 +1,142 @@
 import os
 import png
+import re
+
+import numpy as np
 
 from nupic.research.TP import TP
 from nupic.research.temporal_memory import TemporalMemory as TM
 
+def read_problems(folder_name, problems):
+	for file_name in os.listdir(folder_name):
+		problem = {}
+		with open(os.path.join(folder_name, file_name)) as f:
+			lines = f.read().split('\n')
+			key = re.match('== (.*) ==', lines[0]).group(1)
+			problem[key] = {}
+			index = 1
+			while lines[index] != '':
+				m = re.match('(.*)=(.*)', lines[index])
+				#print "===", lines[index], '==='
+				problem[key][m.group(1)] = m.group(2)
+				index += 1
 
-def read_problem(problem, png_file, txt_file):
-	with open(txt_file) as f:
+			problem['Attributes']['result'] = int(problem['Attributes']['result'])
+			m = re.match('\((.*), (.*)\)', problem['Attributes']['window_size'])
+			problem['Attributes']['window_size'] = (int(m.group(1)), int(m.group(1)))
 
-		problem['title' ] = f.readline().rstrip()
-		problem['type'  ] = f.readline().rstrip()
-		problem['result'] = int(f.readline().rstrip())
+			#print problem
 
-	f = open(png_file)
-	r=png.Reader(file=f)
-	img_struct = r.read()
-	img = list(img_struct[2])
-	f.close()
+			while index < len(lines) - 1:
+				index += 1
+				#print lines[index - 1]
+				#print lines[index]
+				key = re.match('== (.*) ==', lines[index]).group(1)
+				problem[key] = []
+				index += 1
+				while index < len(lines) - 1:
+					new_window = []
+					#print index, lines[index]
+					for _ in range(problem['Attributes']['window_size'][0]):
+						new_window += [int(x) for x in lines[index]]
+						index += 1
 
-	if img_struct[3]['planes'] == 1:
-		palette = [2 if p[2] > p[1] and p[2] > p[0] 
-					else (1 - sum(p) / (3 * 255.0)) 
-				   for p in img_struct[3]['palette']]
-		img = [[palette[x] for x in l] for l in img]
-	else:
-		img = [[2 if l[i + 2] > l[i + 1] and l[i + 2] > l[i] else 
-				1 - int(round((l[i] + l[i + 1] + l[i + 2]) / (3 * 255.0)))
-					for i in range(0, len(l), 3)] 
-				for l in img]
+					if index < len(lines)-1 and re.match('== (.*) ==', lines[index + 1]):
+						break
+					#print index, lines[index]
+					index += 1
+					problem[key].append(np.array(new_window))
+					#index += 1
 	
-	size = (len(img), len(img[0]))
-	x = 0
-	y = 0
-	while img[x][y] != 2:
-		y += 1
-		if y== len(img[0]):
-			y = 0
-			x += 1
-	while img[x][y] == 2:
-		x += 1
-		y += 1
-	
-	window_size = (x, y)
-	while img[x][window_size[1]] != 2:
-		x += 1
-	while img[window_size[0]][y] != 2:
-		y += 1
-	window_size = (x - window_size[0], y - window_size[1])
-	
-	x = 1
-	y = 1
-	windows = []
-	while x < size[0] and y < size[1]:
-		if img[x][y] != 2 and \
-		   img[x - 1][y    ] == 2 and \
-		   img[x - 1][y - 1] == 2 and \
-		   img[x    ][y - 1] == 2 and \
-		   img[x + 1][y - 1] == 2 and \
-		   img[x - 1][y + 1] == 2: 
-		    new_window = [img[x + i][y: y + window_size[1]] for i in range(window_size[0])]
-		    windows.append(new_window)
-		    y += window_size[1]
-		    if y >= size[1]:
-		    	y = 0
-		    	x += window_size[0]
-		y += 1
-		if y >= size[1]:
-			y = 0
-			x += 1
-	problem['windows'] = windows
+		#print problem
+		problems += [problem]
 
 
-def solve(problem):
-	pass
+
+def run_solver_TP(problems, param):
+	m = len(problems)
+	results = []
+	matches = 0
+	
+	SDRlen = problems[0]['Attributes']['window_size'][0] * problems[0]['Attributes']['window_size'][1]
+	tp = TM(numberOfCols=SDRlen, cellsPerColumn=param[0],
+			initialPerm=param[1], connectedPerm=param[2],
+			minThreshold=param[3], newSynapseCount=param[4],
+			permanenceInc=param[5], permanenceDec=param[6],
+			activationThreshold=param[7],
+			globalDecay=0, burnIn=1,
+			checkSynapseConsistency=False,
+			pamLength=10)
+	
+	for problem in problems:
+		for window in problem['Input']:
+			tp.compute(window, learn=True)
+
+		predictiveCells = tp.getPredictiveCells()
+		#print len(predictiveCells)
+		if predictiveCells:
+			#predictedCells = [sum(x) for x in predictedCells]
+			
+			predictedCells = [0] * SDRlen
+			for cell in predictiveCells:
+				predictedCells[cell] = 1
+			
+			match = [np.sum(np.logical_and(window, predictedCells)) for window in problem['Output']]
+			#print match
+			
+			max_matche = max(match)
+			vote = match.index(max_matche) + 1
+		else:
+			vote = -1
+		
+		results.append(vote)
+		tp.compute(problem['Output'][problem['Attributes']['result'] - 1], learn=True)
+		
+	return sum([results[i] == problems[i]['Attributes']['result'] for i in range(m)])
+
+
+def find_optimal_param(problems, algorithm):
+	SDRlen = problems[0]['Attributes']['window_size'][0] * problems[0]['Attributes']['window_size'][1]
+	m = len(problems)
+	params = [(cellsPerColumn, initialPerm / 10.0, connectedPerm / 10.0, 
+				minThreshold, newSynapseCount, 
+				permanenceInc / 10.0, permanenceDec /10.0,
+				activationThreshold)
+				for activationThreshold in range(1, 16, 8)
+				for minThreshold in range(2, activationThreshold, 8)
+				for cellsPerColumn in range(2, 16, 8)
+				for initialPerm in range(1, 9, 4)
+				for connectedPerm in range(1, 9, 4)
+				for newSynapseCount in range(2, 16, 8)
+				for permanenceInc in range(1, 9, 4)
+				for permanenceDec in range(1, 9, 4)]
+
+	matches_list = []
+	max_matches = -1
+	best_param = ()
+	index = 0.0
+	
+	for param in params:
+		matches = algorithm(problems, param)
+
+		index += 1
+		matches_list.append(matches)
+		if matches > max_matches:
+			max_matches = matches
+			best_param = param
+
+	return best_param
 
 
 def main():
-	problem_dir = '../Problem_images'
-	problem_txt_dir = '../Problems'
+	algorithm = run_solver_TP
+
+	folder_name = '../Problems'
 	problems = []
-	for folder in os.listdir(problem_dir):
-		folder_name = problem_dir + os.path.sep + folder
+	read_problems(folder_name, problems)
+	param = find_optimal_param(problems, algorithm)
+	print run_solver_TP(problems, param)
 
-		for file_name in os.listdir(folder_name):
-			problem = {}
-
-			txt_file = os.path.join(problem_txt_dir, folder, 
-								file_name.split('.')[0] + '.txt')
-			png_file = os.path.join(folder_name, file_name)
-			read_problem(problem, png_file, txt_file)
-			problems.append(problem)
-			#solve(problem)
 
 if __name__ == "__main__":
 	main()
