@@ -7,6 +7,8 @@ import numpy as np
 from nupic.research.TP import TP
 from nupic.research.temporal_memory import TemporalMemory as TM
 
+from BacktrackingTM import BacktrackingTM
+
 def read_problems(folder_name, problems):
 	for file_name in os.listdir(folder_name):
 		problem = {}
@@ -59,7 +61,7 @@ def run_solver_TP(problems, param):
 	matches = 0
 	
 	SDRlen = problems[0]['Attributes']['window_size'][0] * problems[0]['Attributes']['window_size'][1]
-	tp = TM(numberOfCols=SDRlen, cellsPerColumn=param[0],
+	tp = TP(numberOfCols=SDRlen, cellsPerColumn=param[0],
 			initialPerm=param[1], connectedPerm=param[2],
 			minThreshold=param[3], newSynapseCount=param[4],
 			permanenceInc=param[5], permanenceDec=param[6],
@@ -67,14 +69,28 @@ def run_solver_TP(problems, param):
 			globalDecay=0, burnIn=1,
 			checkSynapseConsistency=False,
 			pamLength=10)
-	
-	for problem in problems:
-		for window in problem['Input']:
-			tp.compute(window, learn=True)
+	print param
+	for problem in problems[:1]:
+		predictiveCells = [[]]
+		aux = 0
+		while np.sum(predictiveCells) < 5 and aux < 1000:
+			aux += 1
+			for window in problem['Input']:
+				tp.compute(window, enableLearn = True, computeInfOutput = True)
+			predictiveCells = tp.getPredictedState()
+			tp.compute(problem['Output'][problem['Attributes']['result'] - 1], enableLearn = True, computeInfOutput = False)
+			tp.reset()
+		print aux
 
-		predictiveCells = tp.getPredictiveCells()
+		if np.sum(predictiveCells) > 0:
+			print np.sum(predictiveCells)
+		'''
+		for window in problem['Input']:
+			tp.compute(window, enableLearn=False, computeInfOutput = True)
+
+		predictiveCells = tp.getPredictedState()
 		#print len(predictiveCells)
-		if predictiveCells:
+		if len(predictiveCells) > 0:
 			#predictedCells = [sum(x) for x in predictedCells]
 			
 			predictedCells = [0] * SDRlen
@@ -88,11 +104,17 @@ def run_solver_TP(problems, param):
 			vote = match.index(max_matche) + 1
 		else:
 			vote = -1
+
+		print vote, problem['Attributes']['result']
 		
 		results.append(vote)
-		tp.compute(problem['Output'][problem['Attributes']['result'] - 1], learn=True)
+		tp.compute(problem['Output'][problem['Attributes']['result'] - 1], learn=False)
+		break
 		
-	return sum([results[i] == problems[i]['Attributes']['result'] for i in range(m)])
+	return sum([results[i] == problems[i]['Attributes']['result'] for i in range(1)])
+	#return sum([results[i] == problems[i]['Attributes']['result'] for i in range(m)])
+	'''
+	return 0
 
 
 def find_optimal_param(problems, algorithm):
@@ -104,13 +126,13 @@ def find_optimal_param(problems, algorithm):
 				activationThreshold)
 				for activationThreshold in range(1, 16, 8)
 				for minThreshold in range(2, activationThreshold, 8)
-				for cellsPerColumn in range(2, 16, 8)
+				for cellsPerColumn in range(8, 64, 8)
 				for initialPerm in range(1, 9, 4)
 				for connectedPerm in range(1, 9, 4)
 				for newSynapseCount in range(2, 16, 8)
 				for permanenceInc in range(1, 9, 4)
 				for permanenceDec in range(1, 9, 4)]
-
+	print len(params)
 	matches_list = []
 	max_matches = -1
 	best_param = ()
@@ -118,7 +140,7 @@ def find_optimal_param(problems, algorithm):
 	
 	for param in params:
 		matches = algorithm(problems, param)
-
+		print matches
 		index += 1
 		matches_list.append(matches)
 		if matches > max_matches:
@@ -134,8 +156,9 @@ def main():
 	folder_name = '../Problems'
 	problems = []
 	read_problems(folder_name, problems)
+	print(problems[0]['Input'][0].shape)
 	param = find_optimal_param(problems, algorithm)
-	print run_solver_TP(problems, param)
+	#print run_solver_TP(problems, param)
 
 
 if __name__ == "__main__":
