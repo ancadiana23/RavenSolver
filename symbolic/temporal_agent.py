@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 from random import randint
 
 import read_problems
@@ -6,6 +7,7 @@ import numpy as np
 from nupic.research.TP import TP
 from nupic.research.temporal_memory import TemporalMemory as TM
 
+from BacktrackingTM import BacktrackingTM
 
 def create_SDR(problem, problem_attributes, SDR, match=True):
 	if match:
@@ -27,41 +29,48 @@ def create_SDR(problem, problem_attributes, SDR, match=True):
 
 
 def run_solver_TP(problems, param):
+	print(param)
 	m = len(problems)
 	SDRlen = len(problems[0]['SDRs']['input'][0])
 	results = []
 	matches = 0
-	for problem in problems:
-		tp = TP(numberOfCols=SDRlen, cellsPerColumn=param[0],
-			initialPerm=param[1], connectedPerm=param[2],
-			minThreshold=param[3], newSynapseCount=param[4],
-			permanenceInc=param[5], permanenceDec=param[6],
-			activationThreshold=param[7],
-			globalDecay=0, burnIn=1,
-			checkSynapseConsistency=False,
-			pamLength=10)
+	i = 0
 	
-		print type(problem['SDRs']['input'][0])
-		tp.compute(problem['SDRs']['input'][0], enableLearn = True, computeInfOutput = False)
-		tp.compute(problem['SDRs']['input'][1], enableLearn = True, computeInfOutput = False)
+	for problem in problems:
+		print('')
+		tp = TP(numberOfCols=SDRlen, cellsPerColumn=param[0],
+				initialPerm=param[1], connectedPerm=param[2],
+				minThreshold=param[3], newSynapseCount=param[4],
+				permanenceInc=param[5], permanenceDec=param[6],
+				activationThreshold=param[7])
+		print(problem['title'])
+		print(np.sum(problem['SDRs']['input'], axis = 1))
+		print(np.sum(problem['SDRs']['output'], axis = 1))
+		for _ in range(10):
 
-		tp.compute(problem['SDRs']['input'][2], enableLearn = True, computeInfOutput = True)
-		
-		predictedCells = tp.getPredictedState()
-		predictedCells = [sum(x) for x in predictedCells]
-		
+			tp.compute(problem['SDRs']['input'][0], enableLearn = True, computeInfOutput = False)
+			tp.compute(problem['SDRs']['input'][1], enableLearn = True, computeInfOutput = False)
 
-		match = [np.sum(np.logical_and(x, predictedCells)) for x in problem['SDRs']['output']]
-		#print match
-		
-		max_matche = max(match)
-		vote = match.index(max_matche) + 1
-		#results.append((vote, max_matche))
-		results.append(vote)
-		tp.compute(problem['SDRs']['output'][vote], enableLearn = True, computeInfOutput = False)
-		#if vote == problem['result']:
-		#print problem['title'], vote, problem['result']
+			tp.compute(problem['SDRs']['input'][2], enableLearn = True, computeInfOutput = True)
+			
+			predictedCells = tp.getPredictedState()
+			predictedCells = [sum(x) for x in predictedCells]
+			
+			match = [np.sum(np.logical_and(x, predictedCells)) for x in problem['SDRs']['output']]
+			#print match
+			
+			max_matche = max(match)
 
+			vote = match.index(max_matche) + 1
+			if np.sum(predictedCells):
+				print(problem['title'],problem['result'], vote, np.sum(predictedCells), sum(problem['SDRs']['output'][problem['result'] - 1]))
+
+			#results.append((vote, max_matche))
+			results.append(vote)
+			tp.compute(problem['SDRs']['output'][vote], enableLearn = True, computeInfOutput = False)
+			#if vote == problem['result']:
+			#print problem['title'], vote, problem['result']
+		i += 1
 	#return sum([(results[i][0] == problems[i]['result']) * results[i][1] for i in range(m)])
 	return sum([results[i] == problems[i]['result'] for i in range(m)])
 
@@ -172,8 +181,12 @@ def find_optimal_param(problems, algorithm):
 	return best_param
 
 
-def run():
-	algorithm = run_solver_TP
+def run(args):
+	if args.algorithm == 'TP':
+		algorithm = run_solver_TP
+	elif args.algorithm == 'TM':
+		algorithm = run_solver_TM
+
 	problems, problem_attributes = read_problems.get_problems()
 	SDRs = []	
 	for problem in problems:
@@ -188,10 +201,9 @@ def run():
 				problem['SDRs'][y].append(np.array(new_SDR))
 				index += 1
 	m = len(problems)
-	
-	param = find_optimal_param(problems, algorithm)
-	#param =  (2, 0.1, 0.1, 2, 10, 0.1, 0.1, 9)
-	#result = algorithm(problems, param)
+	#param = find_optimal_param(problems, algorithm)
+	param = (2, 0.5, 0.1, 2, 10, 0.5, 0.1, 9)
+	result = algorithm(problems, param)
 	#print(result, param)
 	#result, param = local_search(problems, algorithm, param)
 	#print(result, param)
@@ -199,4 +211,8 @@ def run():
 
 
 if __name__ == "__main__":
-	run()
+	parser = ArgumentParser()
+	parser.add_argument("--algorithm", type = str, default = 'TP')
+	args = parser.parse_args()
+
+	run(args)

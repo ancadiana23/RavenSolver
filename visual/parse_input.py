@@ -1,6 +1,7 @@
-import png
-import os
 import numpy as np
+import os
+import png
+import re
 
 
 def identify_colors(img_struct, img):
@@ -27,33 +28,16 @@ def identify_colors(img_struct, img):
 						   i + a < len(img) and \
 						   j + b < len(img[i]):
 						    count_2s[i + a][j + b] += 1
-		#print len(img[i])
+
 		count_2s = [[min([1, x / 3]) for x in l] for l in count_2s]
 
 		img = [[count_2s[i][j] * 2 if img[i][j] == 2 else img[i][j]
 				for j in range(len(img[i]))] 
 				for i in range(len(img))]
-	
-	'''img1 = [[x/2 for x in l] for l in img]
-	g = open(problem['title'] + '.png', 'wb')
-	writer = png.Writer(len(img1[0]), len(img1), greyscale=True, bitdepth=1)
-	writer.write(g, img1)
-	g.close()'''
+
 	return img
 
-def read_problem(problem, png_file, txt_file):
-	with open(txt_file) as f:
-		problem['title' ] = f.readline().rstrip()
-		problem['type'  ] = f.readline().rstrip()
-		problem['result'] = int(f.readline().rstrip())
-
-	f = open(png_file)
-	r=png.Reader(file=f)
-	img_struct = r.read()
-	img = list(img_struct[2])
-	img = identify_colors(img_struct, img)
-	f.close()
-
+def split_into_windows(img):
 	size = (len(img), len(img[0]))
 	x = 0
 	y = 0
@@ -69,7 +53,7 @@ def read_problem(problem, png_file, txt_file):
 	while img[window_size[0]][y] == 2:
 		y += 1
 	window_size = (x - window_size[0], y - window_size[1])
-	#print window_size
+	problem['Attributes']['window_size'] = window_size
 	
 	x = 1
 	y = 1
@@ -91,37 +75,125 @@ def read_problem(problem, png_file, txt_file):
 			y = 0
 			x += 1 + found * window_size[0]
 			found = 0
-	
-	#print len(windows)
-	problem['windows'] = windows
+
+	pix_dict = {0:'0', 1:'1', 2:'0'}
+	for i in range(len(windows)):
+		windows[i] = [[pix_dict[x] for x in line] for line in windows[i]]
+	return np.array(windows)
+
+
+def parse_problem(problem, png_file, txt_file):
+	problem['Attributes'] = {}
+	with open(txt_file) as f:
+		problem['Attributes']['title' ] = f.readline().rstrip()
+		problem['Attributes']['type'  ] = f.readline().rstrip()
+		problem['Attributes']['result'] = int(f.readline().rstrip())
+
+	f = open(png_file)
+	r=png.Reader(file=f)
+	img_struct = r.read()
+	img = list(img_struct[2])
+	img = identify_colors(img_struct, img)
+	f.close()
+
+	windows = split_into_windows(img)
+
+	problem['Input']  = windows[:3]
+	problem['Output'] = windows[4:]
 
 
 def write_problem(problem, out_file):
-	#print len(problem['windows'])
+	window_size = list(problem['Attributes']['window_size'])
+	assert problem['Input'].shape == tuple([3] + window_size), 'Wrong input wondow size'
+	assert problem['Output'].shape == tuple([6] + window_size), 'Wrong output wondow size'
+
 	with open(out_file, 'w+') as f:
 		f.write('== Attributes ==\n')
-		f.write('title=' + problem['title'] + '\n')
-		f.write('type= '+ problem['type'] + '\n')
-		f.write('result=' + str(problem['result']) + '\n')
-		f.write('window_size=' + str(problem['windows'][0].shape) + '\n\n')
+		f.write('title=' + problem['Attributes']['title'] + '\n')
+		f.write('type= '+ problem['Attributes']['type'] + '\n')
+		f.write('result=' + str(problem['Attributes']['result']) + '\n')
+		f.write('window_size=' + str(problem['Attributes']['window_size']) + '\n\n')
+
 		f.write('== Input ==' + '\n')
-		
-		aux = {0:'0', 1:'1', 2:'0'}
-		for window in problem['windows'][0:3]:
-			#print len(window)
-			#print window.shape
+		for window in problem['Input']:
 			for line in window:
-				f.write(''.join([aux[x] for x in line]))
+				f.write(''.join([str(x) for x in line]))
 				f.write('\n')
 			f.write('\n')
+
 		f.write('== Output ==' + '\n')
-		for window in problem['windows'][4:]:
+		for window in problem['Output']:
 			for line in window:
-				f.write(''.join([aux[x] for x in line]))
+				f.write(''.join([str(x) for x in line]))
 				f.write('\n')
 			f.write('\n')
 
 
+def write_sdr_csv(problem, out_file):
+	with open(out_file, 'w+') as f:
+		f.write('Problem\n')
+		f.write('sdr\n')
+		
+		for window in problem['Input']:
+			f.write(''.join([str(x) for line in window for x in line]))
+			f.write('\n\n')
+		
+		window = problem['Output'][problem['Attributes']['result'] - 1]
+		for line in window:
+			f.write(''.join([str(x) for x in line]))
+		f.write('\n')
+
+
+def get_problems(folder_name):
+	problems = []
+	for i in range(len(os.listdir(folder_name))):
+		file_name = '%d.txt' % i
+		problem = {}
+		with open(os.path.join(folder_name, file_name)) as f:
+			lines = f.read().split('\n')
+			key = re.match('== (.*) ==', lines[0]).group(1)
+			problem[key] = {}
+			index = 1
+			while lines[index] != '':
+				m = re.match('(.*)=(.*)', lines[index])
+				problem[key][m.group(1)] = m.group(2).strip()
+				index += 1
+
+			problem['Attributes']['result'] = int(problem['Attributes']['result'])
+			m = re.match('\((.*), (.*)\)', problem['Attributes']['window_size'])
+			problem['Attributes']['window_size'] = (int(m.group(1)), int(m.group(1)))
+
+			while index < len(lines) - 1:
+				index += 1
+				key = re.match('== (.*) ==', lines[index]).group(1)
+				problem[key] = []
+				index += 1
+				while index < len(lines) - 1:
+					new_window = []
+					for _ in range(problem['Attributes']['window_size'][0]):
+						new_window += [[int(x) for x in lines[index]]]
+						index += 1
+
+					problem[key].append(np.array(new_window))
+					
+					if index < len(lines)-1 and re.match('== (.*) ==', lines[index + 1]):
+						break
+					index += 1
+				problem[key] = np.array(problem[key])
+		problems += [problem]
+	return problems
+
+def get_windows(folder_name):
+	problems = get_problems(folder_name)
+
+	windows = np.append(problems[0]['Input'],
+						problems[0]['Output'], 
+						axis=0)
+	for problem in problems[1:]:
+		windows = np.append(windows, problem['Input'], axis=0)
+		windows = np.append(windows, problem['Output'], axis=0)
+	
+	return windows
 
 if __name__ == '__main__':
 	problem_dir = '../Problem_images/resized'
@@ -129,8 +201,7 @@ if __name__ == '__main__':
 	output_dir = '../Problems'
 	problems = []
 	index = 0
-	#for folder in os.listdir(problem_dir):
-	#	folder_name = problem_dir + os.path.sep + folder
+
 	folder_name = '../Problem_images/resized'
 	for file_name in os.listdir(folder_name):
 		problem = {}
@@ -138,7 +209,9 @@ if __name__ == '__main__':
 		txt_file = os.path.join(problem_txt_dir, file_name.split('.')[0] + '.txt')
 		png_file = os.path.join(folder_name, file_name)
 		out_file = os.path.join(output_dir, str(index) + '.txt')
+		csv_file = os.path.join("../CSV_Problems", str(index) + '.csv')
 		index += 1
-		#print png_file
-		read_problem(problem, png_file, txt_file)
+		
+		parse_problem(problem, png_file, txt_file)
 		write_problem(problem, out_file)
+		write_sdr_csv(problem, csv_file)

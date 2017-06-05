@@ -50,18 +50,16 @@ def get_problems():
 	problem_dir = "../Problems_txt"
 	problems = []
 	
-	for folder in os.listdir(problem_dir):
-		new_problem_dir = problem_dir + os.path.sep + folder
-		for file in os.listdir(new_problem_dir):
-			new_file = new_problem_dir + os.path.sep + file
-			with open(new_file) as f:
-				new_problem = {}
-				new_problem['title' ] = f.readline().rstrip()
-				new_problem['type'  ] = f.readline().rstrip()
-				new_problem['result'] = int(f.readline().rstrip())
-				lines = f.readlines()
-				new_problem['content'], index = read_content(lines, 0, 0)
-				problems.append(new_problem)
+	for file in os.listdir(problem_dir):
+		new_file = os.path.join(problem_dir, file)
+		with open(new_file) as f:
+			new_problem = {}
+			new_problem['title' ] = f.readline().rstrip()
+			new_problem['type'  ] = f.readline().rstrip()
+			new_problem['result'] = int(f.readline().rstrip())
+			lines = f.readlines()
+			new_problem['content'], index = read_content(lines, 0, 0)
+			problems.append(new_problem)
 	
 	return problems, get_unique_attributes(problems)
 

@@ -1,165 +1,159 @@
-import os
-import png
-import re
-
 import numpy as np
-
+from argparse import ArgumentParser
 from nupic.research.TP import TP
-from nupic.research.temporal_memory import TemporalMemory as TM
-
+from temporal_memory import TemporalMemory as TM
+from nupic.research.spatial_pooler import SpatialPooler
 from BacktrackingTM import BacktrackingTM
-
-def read_problems(folder_name, problems):
-	for file_name in os.listdir(folder_name):
-		problem = {}
-		with open(os.path.join(folder_name, file_name)) as f:
-			lines = f.read().split('\n')
-			key = re.match('== (.*) ==', lines[0]).group(1)
-			problem[key] = {}
-			index = 1
-			while lines[index] != '':
-				m = re.match('(.*)=(.*)', lines[index])
-				#print "===", lines[index], '==='
-				problem[key][m.group(1)] = m.group(2)
-				index += 1
-
-			problem['Attributes']['result'] = int(problem['Attributes']['result'])
-			m = re.match('\((.*), (.*)\)', problem['Attributes']['window_size'])
-			problem['Attributes']['window_size'] = (int(m.group(1)), int(m.group(1)))
-
-			#print problem
-
-			while index < len(lines) - 1:
-				index += 1
-				#print lines[index - 1]
-				#print lines[index]
-				key = re.match('== (.*) ==', lines[index]).group(1)
-				problem[key] = []
-				index += 1
-				while index < len(lines) - 1:
-					new_window = []
-					#print index, lines[index]
-					for _ in range(problem['Attributes']['window_size'][0]):
-						new_window += [int(x) for x in lines[index]]
-						index += 1
-
-					if index < len(lines)-1 and re.match('== (.*) ==', lines[index + 1]):
-						break
-					#print index, lines[index]
-					index += 1
-					problem[key].append(np.array(new_window))
-					#index += 1
-	
-		#print problem
-		problems += [problem]
+from parse_input import get_problems
 
 
+def compute_spatial(layer, input, learn=True):
+	assert layer.getInputDimensions() == input.shape, "Wrong input size"
+	output = np.zeros((layer.getNumColumns(), ), dtype="int")
+	layer.compute(input, learn = learn, activeArray = output)
+	return output
 
-def run_solver_TP(problems, param):
-	m = len(problems)
-	results = []
-	matches = 0
-	
-	SDRlen = problems[0]['Attributes']['window_size'][0] * problems[0]['Attributes']['window_size'][1]
-	tp = TP(numberOfCols=SDRlen, cellsPerColumn=param[0],
-			initialPerm=param[1], connectedPerm=param[2],
-			minThreshold=param[3], newSynapseCount=param[4],
-			permanenceInc=param[5], permanenceDec=param[6],
-			activationThreshold=param[7],
-			globalDecay=0, burnIn=1,
-			checkSynapseConsistency=False,
-			pamLength=10)
-	print param
-	for problem in problems[:1]:
-		predictiveCells = [[]]
-		aux = 0
-		while np.sum(predictiveCells) < 5 and aux < 1000:
-			aux += 1
-			for window in problem['Input']:
-				tp.compute(window, enableLearn = True, computeInfOutput = True)
-			predictiveCells = tp.getPredictedState()
-			tp.compute(problem['Output'][problem['Attributes']['result'] - 1], enableLearn = True, computeInfOutput = False)
-			tp.reset()
-		print aux
 
-		if np.sum(predictiveCells) > 0:
-			print np.sum(predictiveCells)
-		'''
-		for window in problem['Input']:
-			tp.compute(window, enableLearn=False, computeInfOutput = True)
+def compute_temporal(layer, input, learn=True):
+	assert (layer.numberOfCols, ) == input.shape, "Wrong input size"
+	layer.compute(input, enableLearn = learn, computeInfOutput = True)
+	output = layer.getPredictedState()
+	return output
 
-		predictiveCells = tp.getPredictedState()
-		#print len(predictiveCells)
-		if len(predictiveCells) > 0:
-			#predictedCells = [sum(x) for x in predictedCells]
+def compute_temporal_memory(layer, input, learn=True):
+	assert layer.getColumnDimensions() == input.shape, "Wrong input size"
+	layer.compute(input, learn = learn)
+	output = layer.getPredictiveCells()
+	return output
+
+
+def linearize(window):
+	(height, width) = window.shape
+	return window.reshape((height * width, ))
+
+
+def reverse_linearize(window):
+	length = len(window)
+	new_size = length ** 0.5
+	return window.reshape((new_size, new_size))	
+
+
+def run(layers, problems):
+	output_windows = []
+	num_iter = 20
+	correct_predictions = np.zeros((len(problems), num_iter))
+	for i in range(num_iter):
+		#print '-------- ', i, '---------------'
+
+		for j in range(len(problems)):
+			problem = problems[j]
+			#print('')
+			#print(problem['Attributes']['result'])	
+			res_idx = problem['Attributes']['result'] - 1
 			
-			predictedCells = [0] * SDRlen
-			for cell in predictiveCells:
-				predictedCells[cell] = 1
+			'''
+			for _ in range(10):
+				for window in problem['Input'] + [problem['Output'][res_idx]]:
+					last_input = window
+					for (layer, compute_method) in layers:
+						last_input = compute_method(layer, last_input, True)
+			'''
+
+			for window in problem['Input'][:2]:
+				last_input = linearize(window)
+				#print(last_input.shape)
+				for (layer, compute_method) in layers:
+					last_input = compute_method(layer, last_input, True)
+
+			last_input = linearize(problem['Input'][2])
+			for (layer, compute_method) in layers:
+				last_input = compute_method(layer, last_input, True)
 			
-			match = [np.sum(np.logical_and(window, predictedCells)) for window in problem['Output']]
-			#print match
+			predict = last_input[:, 1]
+			#print "Predicted ", np.sum(predict), " bits out of ", predict.shape[0]
+			results = []
+			for k in range(len(problem['Output'])):
+				last_input = linearize(problem['Output'][k])
+				for (layer, compute_method) in layers[:-1]:
+					last_input = compute_method(layer, last_input, False)
+				active = np.sum(last_input)
+				overlap = np.sum(predict * last_input)
+				if active == 0:
+					ratio = 0
+				else:
+					ratio = float(overlap)/active
+					results += [ratio]
+				'''
+				print 'Active: %d Overlap: %d Ratio: %0.3f' % (active, overlap, ratio),
+				if i == res_idx:
+					print('*')
+				else:
+					print('')
+				'''
+
+			if results[res_idx] == max(results):
+				correct_predictions[j][i] = results[res_idx]
 			
-			max_matche = max(match)
-			vote = match.index(max_matche) + 1
-		else:
-			vote = -1
+			last_input = linearize(problem['Output'][res_idx])
+			#last_input = linearize(np.ones(problem['Input'][0].shape))
+			#last_input = predict
+			#print(last_input.shape)
+			for (layer, compute_method) in layers:
+				last_input = compute_method(layer, last_input, True)
+			
+			layers[-1][0].reset()
+	print(correct_predictions)
 
-		print vote, problem['Attributes']['result']
-		
-		results.append(vote)
-		tp.compute(problem['Output'][problem['Attributes']['result'] - 1], learn=False)
-		break
-		
-	return sum([results[i] == problems[i]['Attributes']['result'] for i in range(1)])
-	#return sum([results[i] == problems[i]['Attributes']['result'] for i in range(m)])
-	'''
-	return 0
-
-
-def find_optimal_param(problems, algorithm):
-	SDRlen = problems[0]['Attributes']['window_size'][0] * problems[0]['Attributes']['window_size'][1]
-	m = len(problems)
-	params = [(cellsPerColumn, initialPerm / 10.0, connectedPerm / 10.0, 
-				minThreshold, newSynapseCount, 
-				permanenceInc / 10.0, permanenceDec /10.0,
-				activationThreshold)
-				for activationThreshold in range(1, 16, 8)
-				for minThreshold in range(2, activationThreshold, 8)
-				for cellsPerColumn in range(8, 64, 8)
-				for initialPerm in range(1, 9, 4)
-				for connectedPerm in range(1, 9, 4)
-				for newSynapseCount in range(2, 16, 8)
-				for permanenceInc in range(1, 9, 4)
-				for permanenceDec in range(1, 9, 4)]
-	print len(params)
-	matches_list = []
-	max_matches = -1
-	best_param = ()
-	index = 0.0
-	
-	for param in params:
-		matches = algorithm(problems, param)
-		print matches
-		index += 1
-		matches_list.append(matches)
-		if matches > max_matches:
-			max_matches = matches
-			best_param = param
-
-	return best_param
-
-
-def main():
-	algorithm = run_solver_TP
-
+def main(args):
 	folder_name = '../Problems'
-	problems = []
-	read_problems(folder_name, problems)
-	print(problems[0]['Input'][0].shape)
-	param = find_optimal_param(problems, algorithm)
-	#print run_solver_TP(problems, param)
+	problems = get_problems(folder_name)
+
+	(h, w) = problems[0]['Input'][0].shape
+	#dim1 = (h, w)
+	#dim2 = (h / 2, w / 2)
+
+	numColls1 = h * w
+	numColls2 = numColls1
+	#numColls3 = numColls2 / 2
+	#numColls4 = numColls3 / 2
+
+	sp1 = SpatialPooler(inputDimensions = (numColls1, ), columnDimensions = (numColls2, ), numActiveColumnsPerInhArea = -1, localAreaDensity = 0.05)
+	#sp2 = SpatialPooler(inputDimensions = (numColls1, ), columnDimensions = (numColls2, ), numActiveColumnsPerInhArea = -1, localAreaDensity = 0.05)
+	#sp3 = SpatialPooler(inputDimensions = (numColls2, ), columnDimensions = (numColls3, ), numActiveColumnsPerInhArea = -1, localAreaDensity = 0.05)
+	#sp4 = SpatialPooler(inputDimensions = (numColls3, ), columnDimensions = (numColls4, ), numActiveColumnsPerInhArea = -1, localAreaDensity = 0.05)
+	'''
+	bckTM = BacktrackingTM(numberOfCols=numColls2, cellsPerColumn=2,
+						initialPerm=0.5, connectedPerm=0.5,
+						minThreshold=10, newSynapseCount=10,
+						permanenceInc=0.1, permanenceDec=0.0,
+						activationThreshold=8,
+						globalDecay=0, burnIn=1,
+						checkSynapseConsistency=False,
+						pamLength=10)
+	'''
+	tm = TM(columnDimensions=(numColls2, ), cellsPerColumn=2,
+						initialPermanence=0.5, connectedPerm=0.5,
+						minThreshold=10, newSynapseCount=10,
+						permanenceInc=0.1, permanenceDec=0.0,
+						activationThreshold=10,
+						globalDecay=0, burnIn=1,
+						checkSynapseConsistency=False,
+						pamLength=10)
+	layers = [(sp1, compute_spatial), 
+			  (tm, compute_temporal_memory)]	
+	'''
+	layers = [(sp1, compute_spatial), 
+			  (sp2, compute_spatial), 
+			  (sp3, compute_spatial),
+			  (sp4, compute_spatial),
+			  (bckTM, compute_temporal)]	
+	'''
+	run(layers, problems)
 
 
 if __name__ == "__main__":
-	main()
+    parser = ArgumentParser()
+    args = parser.parse_args()
+
+    main(args)
+	
