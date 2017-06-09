@@ -37,8 +37,8 @@ class Encoder:
             print(layer.shape)
         
         self.lr = tf.placeholder(tf.float32)
-        
-        self.err = tf.reduce_sum(tf.pow(self.Y4 - self.X,  2)) + np.sum(self.Y2)
+    
+        self.err = tf.reduce_sum(tf.pow(self.Y4 - self.X,  2)) + tf.reduce_sum(self.Y2)
 
         self.train_step = tf.train.RMSPropOptimizer(self.lr).minimize(self.err)
 
@@ -75,7 +75,7 @@ class Encoder:
                 windows = input_windows[i * batch_size : (i + 1) * batch_size].reshape((batch_size, height, width, 1))
                 _, cost  = self.sess.run([self.train_step, self.err], feed_dict={self.X:windows, self.lr : learning_rate})
                 errs += [cost]
-        
+                
         return errs
 
 
