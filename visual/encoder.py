@@ -13,7 +13,7 @@ class Encoder:
         L = 10
         M = 1024
         
-        self.X = tf.placeholder(tf.float32, [None, rows, rows, 1])
+        self.X = tf.placeholder(tf.float32, [1, rows, rows, 1])
         
         W_conv_1 = tf.Variable(tf.truncated_normal([K, K, 1, L], stddev=0.1))
         B_conv_1 = tf.Variable(tf.ones([L])/10)
@@ -29,8 +29,8 @@ class Encoder:
         
         stride = 1
         self.Y1 = tf.nn.relu(tf.nn.conv2d(self.X, W_conv_1, strides=[1, stride, stride, 1], padding='SAME') + B_conv_1)
-        self.Y2 = tf.nn.sigmoid(tf.matmul(tf.reshape(self.Y1, (-1, length * L)), W_fc_1) + B_fc_1)
-        self.Y3 = tf.reshape(tf.nn.sigmoid(tf.matmul(self.Y2, W_fc_2) + B_fc_2), (-1, rows, rows, L))
+        self.Y2 = tf.nn.sigmoid(tf.matmul(tf.reshape(self.Y1, (1, length * L)), W_fc_1) + B_fc_1)
+        self.Y3 = tf.reshape(tf.nn.sigmoid(tf.matmul(self.Y2, W_fc_2) + B_fc_2), (1, rows, rows, L))
         self.Y4 = tf.nn.relu(tf.nn.conv2d_transpose(self.Y3, W_conv_2, (1, rows, rows, 1) ,strides=[1, stride, stride, 1], padding='SAME') + B_conv_2)
         
         for layer in [self.X, self.Y1, self.Y2, self.Y3, self.Y4]:
@@ -38,7 +38,7 @@ class Encoder:
         
         self.lr = tf.placeholder(tf.float32)
     
-        self.err = tf.reduce_sum(tf.pow(self.Y4 - self.X,  2)) + tf.reduce_sum(self.Y2)
+        self.err = tf.reduce_sum(tf.pow(self.Y4 - self.X,  2)) + tf.reduce_sum(self.Y2) * 100.0 / M 
 
         self.train_step = tf.train.RMSPropOptimizer(self.lr).minimize(self.err)
 
@@ -65,7 +65,7 @@ class Encoder:
         batch_size = 1
         max_learning_rate = 0.0005
         min_learning_rate = 0.00005
-        max_epochs = 20
+        max_epochs = 50
         
         for epoch in range(max_epochs):
             learning_rate = max_learning_rate + (min_learning_rate - max_learning_rate) * (epoch + 1)/max_epochs
@@ -84,12 +84,11 @@ if __name__ == '__main__':
     input_windows = get_windows(folder_name)
     (num_windows, height, width) = input_windows.shape
     enc = Encoder(height * width)
-    print(input_windows.shape)
-    errs = enc.train(input_windows[:10])
+    errs = enc.train(input_windows)
 
     print("Show decoded data")
     with open('res.txt', 'w+') as f:
-        for win in input_windows[:10]:
+        for win in input_windows:
             encoded = enc.encode(win.reshape((1, height, width, 1)))
             output = enc.decode(encoded)
             print('Sparsity ', float(np.sum(encoded) * 100) / encoded.shape[1])
