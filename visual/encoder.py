@@ -60,20 +60,18 @@ class Encoder:
 
     def train(self, input_windows):
         (num_windows, height, width) = input_windows.shape
-        length = height * width
         errs = []
-        batch_size = 1
-        max_learning_rate = 0.0005
-        min_learning_rate = 0.00005
+        max_learning_rate = 0.0001
+        min_learning_rate = 0.00001
         max_epochs = 50
         
         for epoch in range(max_epochs):
             learning_rate = max_learning_rate + (min_learning_rate - max_learning_rate) * (epoch + 1)/max_epochs
             print('------- %d' % epoch)
             input_windows = np.random.permutation(input_windows)
-            for i in range(len(input_windows)):
-                windows = input_windows[i * batch_size : (i + 1) * batch_size].reshape((batch_size, height, width, 1))
-                _, cost  = self.sess.run([self.train_step, self.err], feed_dict={self.X:windows, self.lr : learning_rate})
+            for win in input_windows:
+                window = win.reshape((1, height, width, 1))
+                _, cost  = self.sess.run([self.train_step, self.err], feed_dict={self.X:window, self.lr : learning_rate})
                 errs += [cost]
                 
         return errs
