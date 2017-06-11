@@ -1,31 +1,46 @@
 import numpy as np
 from argparse import ArgumentParser
 from nupic.research.TP import TP
-from temporal_memory import TemporalMemory as TM
+from nupic.research.temporal_memory import TemporalMemory as TM
 from nupic.research.spatial_pooler import SpatialPooler
 from BacktrackingTM import BacktrackingTM
 from parse_input import get_problems
 
 
-def compute_spatial(layer, input, learn=True):
+def sp_compute(layer, input, learn=True):
 	assert layer.getInputDimensions() == input.shape, "Wrong input size"
 	output = np.zeros((layer.getNumColumns(), ), dtype="int")
 	layer.compute(input, learn = learn, activeArray = output)
 	return output
 
 
-def compute_temporal(layer, input, learn=True):
+def tp_compute(layer, input, learn=True):
 	assert (layer.numberOfCols, ) == input.shape, "Wrong input size"
 	layer.compute(input, enableLearn = learn, computeInfOutput = True)
 	output = layer.getPredictedState()
 	return output
 
-def compute_temporal_memory(layer, input, learn=True):
+
+def tm_compute(layer, input, learn=True):
 	assert layer.getColumnDimensions() == input.shape, "Wrong input size"
 	layer.compute(input, learn = learn)
+	output = layer.getActiveCells()
+	return output
+
+
+def no_prediction(layer):
+	return np.zeros(layer.getNumColumns())
+
+
+def tm_prediction(layer):
 	output = layer.getPredictiveCells()
 	return output
 
+
+def tp_prediction(layer):
+	output = layer.getPredictedState()
+	return output
+	
 
 def linearize(window):
 	(height, width) = window.shape
@@ -69,8 +84,10 @@ def run(layers, problems):
 			for (layer, compute_method) in layers:
 				last_input = compute_method(layer, last_input, True)
 			
-			predict = last_input[:, 1]
-			#print "Predicted ", np.sum(predict), " bits out of ", predict.shape[0]
+			(last_layer, compute_method, predict_method) = layers[-1]
+			predict = predict_method(last_layer)
+			
+			print "Predicted ", np.sum(predict), " bits out of ", predict.shape[0]
 			results = []
 			for k in range(len(problem['Output'])):
 				last_input = linearize(problem['Output'][k])
@@ -139,8 +156,8 @@ def main(args):
 						globalDecay=0, burnIn=1,
 						checkSynapseConsistency=False,
 						pamLength=10)
-	layers = [(sp1, compute_spatial), 
-			  (tm, compute_temporal_memory)]	
+	layers = [(sp1, cp_compute, no_prediction), 
+			  (tm, tm_compute, tm_prediction)]	
 	'''
 	layers = [(sp1, compute_spatial), 
 			  (sp2, compute_spatial), 
