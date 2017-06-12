@@ -144,6 +144,49 @@ def write_sdr_csv(problem, out_file):
 		f.write('\n')
 
 
+def write_problems_with_sdrs(input_folder, output_folder):
+    import encoder
+
+    input_windows = get_windows(input_folder)[:19]
+    (num_windows, height, width) = input_windows.shape
+    enc = encoder.Encoder(height * width)
+    errs = enc.train(input_windows)
+
+    problems = get_problems(input_folder)[:2]
+    for i in range(len(problems)):
+        out_file = output_folder + '/' + str(i) + '.txt'
+        write_problem(problems[i], out_file)
+        with open(out_file, 'a') as f:
+            f.write('== SDRs ==\n')
+            for win in np.concatenate((problems[i]['Input'], problems[i]['Output'])):
+                encoded = enc.encode(win.reshape((1, height, width, 1)))
+                print(encoded.shape)
+                m = np.mean(encoded)
+                #print(np.min(encoded), np.mean(encoded), np.max(encoded))
+                print(np.sum(encoded))
+                encoded = (encoded >= m).astype(int)
+                print(np.sum(encoded))
+                print(encoded.shape)
+                decoded = enc.decode(encoded)
+
+
+                size = int(len(encoded[0]) ** 0.5)
+                for line in encoded.reshape((size, size)):
+                    f.write(''.join([str(x) for x in line]) + '\n')
+                f.write('\n')
+                
+                m = np.mean(decoded)
+                decoded = (decoded >= m).astype(int)
+                print(np.sum(win == decoded.reshape(win.shape)))
+                for line in decoded.reshape((height, width)):
+                    f.write(''.join([str(x) for x in line]) + '\n')
+                f.write('\n')
+                f.write('\n')
+
+                print("---------------")
+
+
+
 def get_problems(folder_name):
 	problems = []
 	for i in range(len(os.listdir(folder_name))):
@@ -183,6 +226,7 @@ def get_problems(folder_name):
 		problems += [problem]
 	return problems
 
+
 def get_windows(folder_name):
 	problems = get_problems(folder_name)
 
@@ -195,23 +239,36 @@ def get_windows(folder_name):
 	
 	return windows
 
+
 if __name__ == '__main__':
-	problem_dir = '../Problem_images/resized'
+    parser = ArgumentParser()
+    parser.add_argument("--parse")
+    parser.add_argument("--sdrs")
+    args = parser.parse_args()
+	
+    problem_dir = '../Problem_images/resized'
 	problem_txt_dir = '../Problems_txt'
 	output_dir = '../Problems'
-	problems = []
-	index = 0
 
-	folder_name = '../Problem_images/resized'
-	for file_name in os.listdir(folder_name):
-		problem = {}
+    if args.parse:
+        problems = []
+        index = 0
 
-		txt_file = os.path.join(problem_txt_dir, file_name.split('.')[0] + '.txt')
-		png_file = os.path.join(folder_name, file_name)
-		out_file = os.path.join(output_dir, str(index) + '.txt')
-		csv_file = os.path.join("../CSV_Problems", str(index) + '.csv')
-		index += 1
-		
-		parse_problem(problem, png_file, txt_file)
-		write_problem(problem, out_file)
-		write_sdr_csv(problem, csv_file)
+        folder_name = '../Problem_images/resized'
+        for file_name in os.listdir(folder_name):
+            problem = {}
+
+            txt_file = os.path.join(problem_txt_dir, file_name.split('.')[0] + '.txt')
+            png_file = os.path.join(folder_name, file_name)
+            out_file = os.path.join(output_dir, str(index) + '.txt')
+            csv_file = os.path.join("../CSV_Problems", str(index) + '.csv')
+            index += 1
+            
+            parse_problem(problem, png_file, txt_file)
+            write_problem(problem, out_file)
+            write_sdr_csv(problem, csv_file)
+    
+    if args.sdrs:
+	   write_problems_with_sdrs(output_dir, '../Problems_sdr')
+
+	

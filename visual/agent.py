@@ -1,9 +1,7 @@
 import numpy as np
 from argparse import ArgumentParser
-from nupic.research.TP import TP
-from nupic.research.temporal_memory import TemporalMemory as TM
-from nupic.research.spatial_pooler import SpatialPooler
-from BacktrackingTM import BacktrackingTM
+from nupic.algorithms.temporal_memory import TemporalMemory as TM
+from nupic.algorithms.spatial_pooler import SpatialPooler
 from parse_input import get_problems
 
 
@@ -14,13 +12,6 @@ def sp_compute(layer, input, learn=True):
 	return output
 
 
-def tp_compute(layer, input, learn=True):
-	assert (layer.numberOfCols, ) == input.shape, "Wrong input size"
-	layer.compute(input, enableLearn = learn, computeInfOutput = True)
-	output = layer.getPredictedState()
-	return output
-
-
 def tm_compute(layer, input, learn=True):
 	assert layer.getColumnDimensions() == input.shape, "Wrong input size"
 	layer.compute(input, learn = learn)
@@ -28,19 +19,22 @@ def tm_compute(layer, input, learn=True):
 	return output
 
 
-def no_prediction(layer):
-	return np.zeros(layer.getNumColumns())
-
-
-def tm_prediction(layer):
-	output = layer.getPredictiveCells()
+def bk_tm_compute(layer, input, learn=True):
+	assert layer.getColumnDimensions() == input.shape, "Wrong input size"
+	layer.compute(input, enableLearn = learn, enableInference=True)
+	output = layer.getActiveCells()
 	return output
 
 
-def tp_prediction(layer):
-	output = layer.getPredictedState()
+def predict_method(layer):
+	cells = layer.getPredictiveCells()
+	print(layer.getColumnDimensions())
+	print(cells)
+	output = np.zeros(layer.getColumnDimensions())
+	for cell in cells:
+		output[cell] = 1
 	return output
-	
+
 
 def linearize(window):
 	(height, width) = window.shape
@@ -84,10 +78,9 @@ def run(layers, problems):
 			for (layer, compute_method) in layers:
 				last_input = compute_method(layer, last_input, True)
 			
-			(last_layer, compute_method, predict_method) = layers[-1]
+			(last_layer, compute_method) = layers[-1]
 			predict = predict_method(last_layer)
 			
-			print "Predicted ", np.sum(predict), " bits out of ", predict.shape[0]
 			results = []
 			for k in range(len(problem['Output'])):
 				last_input = linearize(problem['Output'][k])
@@ -156,8 +149,8 @@ def main(args):
 						globalDecay=0, burnIn=1,
 						checkSynapseConsistency=False,
 						pamLength=10)
-	layers = [(sp1, cp_compute, no_prediction), 
-			  (tm, tm_compute, tm_prediction)]	
+	layers = [(sp1, sp_compute), 
+			  (tm, tm_compute)]	
 	'''
 	layers = [(sp1, compute_spatial), 
 			  (sp2, compute_spatial), 

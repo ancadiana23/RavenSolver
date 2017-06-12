@@ -37,8 +37,8 @@ class Encoder:
             print(layer.shape)
         
         self.lr = tf.placeholder(tf.float32)
-    
-        self.err = tf.reduce_sum(tf.pow(self.Y4 - self.X,  2)) + tf.reduce_sum(self.Y2) * 100.0 / M 
+        #self.err = tf.reduce_sum(tf.pow(self.Y4 - self.X,  2)) + tf.reduce_sum(tf.to_float(self.Y2 >= tf.reduce_mean(self.Y2)))
+        self.err = tf.reduce_sum(tf.pow(self.Y4 - self.X,  2)) + tf.reduce_sum(self.Y2)
 
         self.train_step = tf.train.RMSPropOptimizer(self.lr).minimize(self.err)
 
@@ -49,12 +49,12 @@ class Encoder:
 
 
     def encode(self, windows):
-        output = enc.sess.run(self.Y2, feed_dict={self.X:windows})
+        output = self.sess.run(self.Y2, feed_dict={self.X:windows})
         return output
 
 
     def decode(self, windows):
-        output = enc.sess.run(self.Y4, feed_dict={self.Y2:windows})
+        output = self.sess.run(self.Y4, feed_dict={self.Y2:windows})
         return output
 
 
@@ -88,7 +88,10 @@ if __name__ == '__main__':
     with open('res.txt', 'w+') as f:
         for win in input_windows:
             encoded = enc.encode(win.reshape((1, height, width, 1)))
+            m = np.mean(encoded)
+            encoded = np.array([[int(x >= m) for x in encoded[0]]])
             output = enc.decode(encoded)
+
             print('Sparsity ', float(np.sum(encoded) * 100) / encoded.shape[1])
             m = np.mean(win)
             for i in range(82):
@@ -107,3 +110,4 @@ if __name__ == '__main__':
     plt.plot(range(len(errs)), errs, color='blue')
     plt.savefig('learning.png')
     
+
