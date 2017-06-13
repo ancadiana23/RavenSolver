@@ -30,6 +30,7 @@ class Encoder:
         stride = 1
         self.Y1 = tf.nn.relu(tf.nn.conv2d(self.X, W_conv_1, strides=[1, stride, stride, 1], padding='SAME') + B_conv_1)
         self.Y2 = tf.nn.sigmoid(tf.matmul(tf.reshape(self.Y1, (1, length * L)), W_fc_1) + B_fc_1)
+        #self.Y2 = tf.to_float(self._Y2 >= tf.reduce_mean(self._Y2))
         self.Y3 = tf.reshape(tf.nn.sigmoid(tf.matmul(self.Y2, W_fc_2) + B_fc_2), (1, rows, rows, L))
         self.Y4 = tf.nn.relu(tf.nn.conv2d_transpose(self.Y3, W_conv_2, (1, rows, rows, 1) ,strides=[1, stride, stride, 1], padding='SAME') + B_conv_2)
         
@@ -38,7 +39,7 @@ class Encoder:
         
         self.lr = tf.placeholder(tf.float32)
         #self.err = tf.reduce_sum(tf.pow(self.Y4 - self.X,  2)) + tf.reduce_sum(tf.to_float(self.Y2 >= tf.reduce_mean(self.Y2)))
-        self.err = tf.reduce_sum(tf.pow(self.Y4 - self.X,  2)) + tf.reduce_sum(self.Y2)
+        self.err = tf.reduce_sum(tf.pow(self.Y4 - self.X,  2)) + tf.reduce_sum(self.Y2) * 100.0 / M
 
         self.train_step = tf.train.RMSPropOptimizer(self.lr).minimize(self.err)
 
@@ -63,11 +64,10 @@ class Encoder:
         errs = []
         max_learning_rate = 0.0001
         min_learning_rate = 0.00001
-        max_epochs = 50
+        max_epochs = 100
         
         for epoch in range(max_epochs):
             learning_rate = max_learning_rate + (min_learning_rate - max_learning_rate) * (epoch + 1)/max_epochs
-            print('------- %d' % epoch)
             input_windows = np.random.permutation(input_windows)
             for win in input_windows:
                 window = win.reshape((1, height, width, 1))
@@ -79,8 +79,12 @@ class Encoder:
 
 if __name__ == '__main__':
     folder_name = '../Problems'
-    input_windows = get_windows(folder_name)
+    input_windows = get_windows(folder_name)[:10]
     (num_windows, height, width) = input_windows.shape
+    '''
+    for win in input_windows:
+        print(np.sum(win) * 100 / (height * width))
+    '''
     enc = Encoder(height * width)
     errs = enc.train(input_windows)
 
@@ -89,9 +93,10 @@ if __name__ == '__main__':
         for win in input_windows:
             encoded = enc.encode(win.reshape((1, height, width, 1)))
             m = np.mean(encoded)
+            print(np.sum(encoded))
             encoded = np.array([[int(x >= m) for x in encoded[0]]])
             output = enc.decode(encoded)
-
+            print(np.sum(encoded))
             print('Sparsity ', float(np.sum(encoded) * 100) / encoded.shape[1])
             m = np.mean(win)
             for i in range(82):
@@ -109,5 +114,5 @@ if __name__ == '__main__':
     #errs = [(float(err) ** 0.5) * 100 / (num_windows * 82 * 82)  for err in errs]
     plt.plot(range(len(errs)), errs, color='blue')
     plt.savefig('learning.png')
-    
+
 

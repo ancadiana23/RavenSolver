@@ -2,6 +2,7 @@ import numpy as np
 import os
 import png
 import re
+from argparse import ArgumentParser
 
 
 def identify_colors(img_struct, img):
@@ -147,12 +148,12 @@ def write_sdr_csv(problem, out_file):
 def write_problems_with_sdrs(input_folder, output_folder):
     import encoder
 
-    input_windows = get_windows(input_folder)[:19]
+    input_windows = get_windows(input_folder)
     (num_windows, height, width) = input_windows.shape
     enc = encoder.Encoder(height * width)
     errs = enc.train(input_windows)
 
-    problems = get_problems(input_folder)[:2]
+    problems = get_problems(input_folder)
     for i in range(len(problems)):
         out_file = output_folder + '/' + str(i) + '.txt'
         write_problem(problems[i], out_file)
@@ -160,29 +161,22 @@ def write_problems_with_sdrs(input_folder, output_folder):
             f.write('== SDRs ==\n')
             for win in np.concatenate((problems[i]['Input'], problems[i]['Output'])):
                 encoded = enc.encode(win.reshape((1, height, width, 1)))
-                print(encoded.shape)
                 m = np.mean(encoded)
                 #print(np.min(encoded), np.mean(encoded), np.max(encoded))
-                print(np.sum(encoded))
                 encoded = (encoded >= m).astype(int)
-                print(np.sum(encoded))
-                print(encoded.shape)
-                decoded = enc.decode(encoded)
-
-
+                
                 size = int(len(encoded[0]) ** 0.5)
                 for line in encoded.reshape((size, size)):
                     f.write(''.join([str(x) for x in line]) + '\n')
                 f.write('\n')
                 
+                print('Sparsity ', float(np.sum(encoded) * 100) / encoded.shape[1])
+                decoded = enc.decode(encoded)
+
                 m = np.mean(decoded)
                 decoded = (decoded >= m).astype(int)
-                print(np.sum(win == decoded.reshape(win.shape)))
-                for line in decoded.reshape((height, width)):
-                    f.write(''.join([str(x) for x in line]) + '\n')
-                f.write('\n')
-                f.write('\n')
-
+                print(np.sum(win == decoded.reshape(win.shape)) * 100.0 / (height * width))
+                
                 print("---------------")
 
 
@@ -242,13 +236,13 @@ def get_windows(folder_name):
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("--parse")
-    parser.add_argument("--sdrs")
+    parser.add_argument("--parse", dest="parse", action="store_true")
+    parser.add_argument("--sdrs", dest="sdrs", action="store_true")
     args = parser.parse_args()
 	
     problem_dir = '../Problem_images/resized'
-	problem_txt_dir = '../Problems_txt'
-	output_dir = '../Problems'
+    problem_txt_dir = '../Problems_txt'
+    output_dir = '../Problems'
 
     if args.parse:
         problems = []
@@ -267,8 +261,8 @@ if __name__ == '__main__':
             parse_problem(problem, png_file, txt_file)
             write_problem(problem, out_file)
             write_sdr_csv(problem, csv_file)
-    
+  
     if args.sdrs:
-	   write_problems_with_sdrs(output_dir, '../Problems_sdr')
+        write_problems_with_sdrs(output_dir, '../Problems_sdr')
 
 	
