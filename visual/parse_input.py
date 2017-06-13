@@ -247,8 +247,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 	
     problem_dir = '../Problem_images/resized'
-	problem_txt_dir = '../Problems_txt'
-	output_dir = '../Problems'
+    problem_txt_dir = '../Problems_txt'
+    output_dir = '../Problems'
 
     if args.parse:
         problems = []

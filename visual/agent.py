@@ -1,6 +1,7 @@
 import numpy as np
 from argparse import ArgumentParser
 from nupic.algorithms.temporal_memory import TemporalMemory as TM
+from nupic.algorithms.backtracking_tm import BacktrackingTM as BTM
 from nupic.algorithms.spatial_pooler import SpatialPooler
 from parse_input import get_problems
 

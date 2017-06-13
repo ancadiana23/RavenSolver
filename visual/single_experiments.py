@@ -1,115 +1,162 @@
 import numpy as np
 from argparse import ArgumentParser
-from nupic.research.TP import TP
-from nupic.research.temporal_memory import TemporalMemory as TM
-from nupic.research.spatial_pooler import SpatialPooler
-from BacktrackingTM import BacktrackingTM
+from nupic.algorithms.temporal_memory import TemporalMemory as TM
+from nupic.algorithms.backtracking_tm import BacktrackingTM as BTM
+from nupic.algorithms.spatial_pooler import SpatialPooler
 from parse_input import get_problems
 
 
 class SingleExperiments:
-	def print_window(window):
+	def print_window(self, window):
 		for line in window:
 			print(''.join([str(x) for x in line]))
 		print('\n')
 
+
+	def experiment5(self):
+		tm = BTM(numberOfCols=60, cellsPerColumn=2,
+                    initialPerm=0.5, connectedPerm=0.5,
+                    minThreshold=10, newSynapseCount=10,
+                    permanenceInc=0.1, permanenceDec=0.0,
+                    activationThreshold=8,
+                    globalDecay=0, burnIn=1,
+                    checkSynapseConsistency=False,
+                    pamLength=10)
+		x = np.zeros((5, tm.numberOfCols), dtype="uint32")
+		for i in range(5):
+			x[0,1:9]  = 1   # Input SDR representing "A", corresponding to columns 0-9
+			x[1,11:19] = 1   # Input SDR representing "B", corresponding to columns 10-19
+			x[2,21:29] = 1   # Input SDR representing "C", corresponding to columns 20-29
+			x[3,31:39] = 1   # Input SDR representing "D", corresponding to columns 30-39
+			x[4,41:49] = 1
+		print(x)
+		print('\n')
+
+		for i in range(10):
+			for j in [2, 3, 4, 1, 0]:
+				tm.compute(x[j], enableLearn = True, enableInference = True)
+			predict = (tm.predict(5) > 0).astype(int)
+			print(predict)
+			print('\n')
+
+			#tm.reset()
+
 	def experiment4(self):
 		print("Running experiment 4")
-		
-		numColls = 16
+
+		'''
+		s = tuple([6, 6])
+		x = np.zeros(s).astype(int)
+		y = np.zeros(s).astype(int)
+
+		x[1:-1,  1] = 1
+		x[1:-1, -2] = 1
+		x[ 1, 1:-1] = 1
+		x[-2, 1:-1] = 1
+
+		y[1:-1, 1:-1] = 1
+		'''
+		numColls = 10
 		x = np.zeros(numColls).astype(int)
 		y = np.zeros(numColls).astype(int)
+		z = np.zeros(numColls).astype(int)
 		x[:numColls/2] = 1
 		y[numColls/2:] = 1
+		#z[2 * numColls / 3:] = 1
+		
 		print(x)
 		print(y)
-			
-		tm = BacktrackingTM(numberOfCols=numColls, cellsPerColumn=2,
+		#print(z)
+
+		#x = x.reshape((-1))
+		#y = y.reshape((-1))
+		
+		tm = BTM(numberOfCols=len(x), cellsPerColumn=3,
 					initialPerm=0.5, connectedPerm=0.5,
 					minThreshold=10, newSynapseCount=10,
 					permanenceInc=0.1, permanenceDec=0.0,
 					activationThreshold=8,
 					globalDecay=0, burnIn=1,
 					checkSynapseConsistency=False,
-					pamLength=numColls)
-		for i in range(5):
-			tm.compute(x, enableLearn=True, computeInfOutput=True)
+					pamLength=1)
+
+		for i in range(10):
+			tm.compute(x, enableLearn=True, enableInference=True)
 			predictedCells1 = tm.getPredictedState()
-			#tm.compute(x, learn=True)
-			#predictedCells1 = tm.getPredictiveCells()
+			print(np.transpose(predictedCells1))
+			tm.compute(y, enableLearn=True, enableInference=True)
+			#tm.compute(z, enableLearn=True, enableInference=True)
 
-			if np.sum(predictedCells1) > 0:
-				print(predictedCells1)
-				#print("!!!!", np.sum(predictedCells1))
+			
 
-			tm.compute(y, enableLearn=True, computeInfOutput=True)
+			'''
+			predict = (tm.predict(4).reshape((-1, 6, 6)) > 0).astype(int)
+			print(predict[0, :, :])
+			print(predict[1, :, :])
+			print(predict[2, :, :])
+			print(predict[3, :, :])
+			print('\n')
+			'''
+			'''
+			predict = tm.infer(x).reshape((6, 6, 2))
+			print(predict[:, :, 0])
+			print(predict[:, :, 1])
+			print('\n')
+			predict = tm.infer(y).reshape((6, 6, 2))
+			print(predict[:, :, 0])
+			print(predict[:, :, 1])
+			print('\n\n\n')
+			'''
+			
+			'''
+			tm.compute(x, enableLearn=True, enableInference=True)
+			predictedCells1 = tm.getPredictedState()
+			print(np.transpose(predictedCells1).reshape((2, 6, 6))[1])
+
+			tm.compute(y, enableLearn=True, enableInference=True)
 			predictedCells2 = tm.getPredictedState()
-			#tm.compute(x, learn=True)
-			#predictedCells2 = tm.getPredictiveCells()
-			if np.sum(predictedCells2):
-				print(predictedCells2)
-				#print("??", np.sum(predictedCells2))		
-
+			print(np.transpose(predictedCells2).reshape((2, 6, 6))[1])
+			#tm.reset()
+			'''
 
 	def experiment3(self):
 		print("Running experiment 3")
 
 		numColls = 16
-		s = numColls ** (0.5)
+		s = int(numColls ** (0.5))
 		print(s)
 
-		'''
-		x = np.zeros((s, s)).astype(int)
-		x[ 2, 2:-2] = 1
-		x[-3, 2:-2] = 1
-		x[2:-2,  2] = 1
-		x[2:-2, -3] = 1
-		print(x)
-		x = x.reshape(numColls)
-		
-		y = np.zeros((s, s)).astype(int)
-		y[2:-2, 2:-2] = 1
-		print(y)
-		y = y.reshape(numColls)
-		'''
 		x = np.zeros(numColls).astype(int)
 		y = np.zeros(numColls).astype(int)
 		x[:numColls/2] = 1
 		y[numColls/2:] = 1
-		
+
 		print(x)
 		print(y)
 
-		tm = BacktrackingTM(numberOfCols=numColls, cellsPerColumn=2,
+		tm = TM(numberOfCols=numColls, cellsPerColumn=2,
 						initialPerm=0.5, connectedPerm=0.5,
-						minThreshold=10, newSynapseCount=10,
+						minThreshold=8, newSynapseCount=10,
 						permanenceInc=0.1, permanenceDec=0.0,
 						activationThreshold=8,
 						globalDecay=0, burnIn=1,
 						checkSynapseConsistency=False,
 						pamLength=10)
 		
-		for i in range(10):
+		for i in range(100):
 			print("---- 1 ------")
-			tm.compute(x, enableLearn = True, computeInfOutput = True)
-			predictedCells1 = tm.getPredictedState()
+			tm.compute(x, learn=True)
+			predictedCells1 = tm.getPredictiveCells()
 			print(sum(predictedCells1))
-			#res1 = np.transpose(predictedCells1)
-
-			#res1 = res1.reshape((len(res1), s, s))
-			#print_window(res1[0])
-			#print_window(res1[1])
+			print(np.transpose(predictedCells1))
+			
 			print('\n')
 
 			print("---- 2 ------")
-			tm.compute(y, enableLearn = True, computeInfOutput = True)
-			predictedCells2 = tm.getPredictedState()
+			tm.compute(y, learn=True)
+			predictedCells2 = tm.getPredictiveCells()
 			print(sum(predictedCells2))
-			#res2 = np.transpose(predictedCells2)
-			
-			#res2 = res2.reshape((len(res2), s, s))
-			#print_window(res2[0])
-			#print_window(res2[1])
+			print(np.transpose(predictedCells2))
 			print('\n')
 
 
@@ -122,15 +169,20 @@ class SingleExperiments:
 		problem1[-10, 10:-10] = 1
 		problem1[10:-10, 10] = 1
 		problem1[10:-10, -10] = 1
+		for line in problem1:
+			print(line)
+		print('\n')
 		problem1 = problem1.reshape(32 * 32)
 
 		problem2 = np.zeros((32, 32)).astype(int)		
 		problem2[10:-10, 10:-10] = 1
+		for line in problem2:
+			print(line)
 		problem2 = problem2.reshape(32 * 32)
-		print(problem1)
-		print(problem2)
+		
 		tm = TM()
-		for _ in range(100):
+		for i in range(100):
+			print(i)
 			tm.compute(problem1, learn = True)
 			predictiveCells = tm.getPredictiveCells()
 			if predictiveCells != []:
@@ -144,21 +196,21 @@ class SingleExperiments:
 
 		print "Getting problems...",
 		folder_name = '../Problems'
-		problems = []
-		get_problems(folder_name, problems)
+		problems = get_problems(folder_name)
 		print("Finished")
 		
 		inputDim = problems[0]['Input'][0].shape
-		sp = SpatialPooler(inputDimensions = inputDim, columnDimensions = (inputDim[0] / 8, ))
+		print(inputDim)
+		sp = SpatialPooler(inputDimensions = inputDim, columnDimensions=(32, 32))
 		print(sp.getColumnDimensions())
 	
 		for problem in problems[:1]:
+			windows = np.concatenate((problem['Input'], problem['Output']))
 			for _ in range(1):
-				windows = problem['Input'] + problem['Output']
-				print(len(windows))
-				for window in problem['Input'] + problem['Output']:
-					output = np.zeros(sp.getColumnDimensions(), dtype="int")
-					sp.compute(window, learn = True, activeArray = output)
+				for window in windows:
+					output = np.zeros(32 * 32, dtype="int")
+					print(output.shape)
+					sp.compute(window, learn = True, activeArray=output)
 					if sum(output) != 0:
 						print(sum(output))
 
@@ -270,7 +322,8 @@ class SingleExperiments:
 
 		
 		experiments = [self.experiment1, self.experiment2, 
-						self.experiment3, self.experiment4]
+						self.experiment3, self.experiment4,
+						self.experiment5]
 		
 		if args.experiment != 0:
 			experiments[args.experiment - 1]()
