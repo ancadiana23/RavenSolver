@@ -7,14 +7,27 @@ import matplotlib.pyplot as plt
 
 
 class Encoder:
+    """
+    Class that defines an auto-encoder implemented using a convolutuional neural network
+    """
+
     def __init__(self, length):
+        """
+        Constructor
+
+        Args:
+        length: length of the input
+        """
+
         rows = int(length ** 0.5)
         K = 3
         L = 10
         M = 1024
-        
+
+        # input placeholder
         self.X = tf.placeholder(tf.float32, [1, rows, rows, 1])
-        
+
+        # weights and biases for the layers
         W_conv_1 = tf.Variable(tf.truncated_normal([K, K, 1, L], stddev=0.1))
         B_conv_1 = tf.Variable(tf.ones([L])/10)
 
@@ -26,21 +39,26 @@ class Encoder:
 
         W_fc_2 = tf.Variable(tf.truncated_normal([M, length * L], stddev=0.1))
         B_fc_2 = tf.Variable(tf.ones([length * L])/10)
-        
-        stride = 1
+
+        stride = 1  # used in the concolutional layers
+
+        # encoding layers
         self.Y1 = tf.nn.relu(tf.nn.conv2d(self.X, W_conv_1, strides=[1, stride, stride, 1], padding='SAME') + B_conv_1)
         self.Y2 = tf.nn.sigmoid(tf.matmul(tf.reshape(self.Y1, (1, length * L)), W_fc_1) + B_fc_1)
-        #self.Y2 = tf.to_float(self._Y2 >= tf.reduce_mean(self._Y2))
+
+        # decoding layers
         self.Y3 = tf.reshape(tf.nn.sigmoid(tf.matmul(self.Y2, W_fc_2) + B_fc_2), (1, rows, rows, L))
         self.Y4 = tf.nn.relu(tf.nn.conv2d_transpose(self.Y3, W_conv_2, (1, rows, rows, 1) ,strides=[1, stride, stride, 1], padding='SAME') + B_conv_2)
-        
+
         for layer in [self.X, self.Y1, self.Y2, self.Y3, self.Y4]:
             print(layer.shape)
-        
+
         self.lr = tf.placeholder(tf.float32)
-        #self.err = tf.reduce_sum(tf.pow(self.Y4 - self.X,  2)) + tf.reduce_sum(tf.to_float(self.Y2 >= tf.reduce_mean(self.Y2)))
+
+        # error = (output - input)^2 + density(Y2)
         self.err = tf.reduce_sum(tf.pow(self.Y4 - self.X,  2)) + tf.reduce_sum(self.Y2) * 100.0 / M
 
+        # gradient descent optimization algorithm
         self.train_step = tf.train.RMSPropOptimizer(self.lr).minimize(self.err)
 
         init = tf.global_variables_initializer()
@@ -50,22 +68,32 @@ class Encoder:
 
 
     def encode(self, windows):
+        """
+        Encode an array of windows using the trained neural network
+        """
         output = self.sess.run(self.Y2, feed_dict={self.X:windows})
         return output
 
 
     def decode(self, windows):
+        """
+        Decode an array of windows using the trained neural network
+        """
         output = self.sess.run(self.Y4, feed_dict={self.Y2:windows})
         return output
 
 
     def train(self, input_windows):
+        """
+        Train the neural network
+        """
+
         (num_windows, height, width) = input_windows.shape
         errs = []
         max_learning_rate = 0.0001
         min_learning_rate = 0.00001
         max_epochs = 100
-        
+
         for epoch in range(max_epochs):
             learning_rate = max_learning_rate + (min_learning_rate - max_learning_rate) * (epoch + 1)/max_epochs
             input_windows = np.random.permutation(input_windows)
@@ -73,7 +101,7 @@ class Encoder:
                 window = win.reshape((1, height, width, 1))
                 _, cost  = self.sess.run([self.train_step, self.err], feed_dict={self.X:window, self.lr : learning_rate})
                 errs += [cost]
-                
+
         return errs
 
 

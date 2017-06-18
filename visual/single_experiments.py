@@ -13,15 +13,85 @@ class SingleExperiments:
 		print('\n')
 
 
+	def experiment6(self):
+		n = 15
+		tm = BTM(numberOfCols=n, cellsPerColumn=3,
+                    initialPerm=0.5, connectedPerm=0.5,
+                    minThreshold=4, newSynapseCount=10,
+                    activationThreshold=5,
+                    pamLength=10)
+		x = np.zeros(n)
+		y = np.zeros(n)
+		z = np.zeros(n)
+
+		x[:5] = 1
+		y[5:10] = 1
+		z[10:] = 1
+		print(x)
+		print(y)
+		print(z)
+		for _ in range(10):
+			print('-------------')
+			tm.compute(x, enableLearn=True, enableInference=True)
+			print(x.astype(int))
+			print((tm.predict(1) * 100).astype(int))
+			print('')
+			tm.compute(y, enableLearn=True, enableInference=True)
+			print(y.astype(int))
+			print((tm.predict(1) * 100).astype(int))
+			print('')
+			tm.compute(x, enableLearn=True, enableInference=True)
+			print(x.astype(int))
+			print((tm.predict(1) * 100).astype(int))
+			print('')
+			tm.compute(z, enableLearn=True, enableInference=True)
+			print(z.astype(int))
+			print((tm.predict(1) * 100).astype(int))
+			print('')
+			
+
 	def experiment5(self):
-		tm = BTM(numberOfCols=60, cellsPerColumn=2,
+		n = 8
+		
+		tm = BTM(numberOfCols=n * n, cellsPerColumn=3,
                     initialPerm=0.5, connectedPerm=0.5,
                     minThreshold=10, newSynapseCount=10,
-                    permanenceInc=0.1, permanenceDec=0.0,
-                    activationThreshold=8,
-                    globalDecay=0, burnIn=1,
-                    checkSynapseConsistency=False,
+                    activationThreshold=10,
                     pamLength=10)
+		'''
+		tm = BTM(numberOfCols=n * n, cellsPerColumn=4,
+                    initialPerm=0.5, connectedPerm=0.5,
+                    minThreshold=4, newSynapseCount=5,
+                    permanenceInc=0.1, permanenceDec=0.0,
+                    activationThreshold=5,
+                    globalDecay=0, burnIn=1,
+                    checkSynapseConsistency=True)
+		'''
+		x = np.zeros((n, n))
+		y = np.zeros((n, n))
+
+		x[1:-1,  1] = 1
+		x[1:-1, -2] = 1
+		x[ 1, 1:-1] = 1
+		x[-2, 1:-1] = 1
+
+		y[1:-1, 1:-1] = 1
+		print(x.astype(int))
+		print(y.astype(int))
+
+		x = x.reshape((-1))
+		y = y.reshape((-1))
+
+		for _ in range(10):
+			tm.compute(x, enableLearn = True, enableInference = True)
+			predict = ((tm.predict(1).reshape((n, n))) * 100).astype(int)
+			print(predict)
+			tm.compute(y, enableLearn = True, enableInference = True)
+			predict = ((tm.predict(1).reshape((n, n))) * 100).astype(int)
+			print(predict)
+			print('\n')
+
+		'''
 		x = np.zeros((5, tm.numberOfCols), dtype="uint32")
 		for i in range(5):
 			x[0,1:9]  = 1   # Input SDR representing "A", corresponding to columns 0-9
@@ -31,7 +101,8 @@ class SingleExperiments:
 			x[4,41:49] = 1
 		print(x)
 		print('\n')
-
+		'''
+		'''
 		for i in range(10):
 			for j in [2, 3, 4, 1, 0]:
 				tm.compute(x[j], enableLearn = True, enableInference = True)
@@ -40,6 +111,7 @@ class SingleExperiments:
 			print('\n')
 
 			#tm.reset()
+		'''
 
 	def experiment4(self):
 		print("Running experiment 4")
@@ -323,7 +395,7 @@ class SingleExperiments:
 		
 		experiments = [self.experiment1, self.experiment2, 
 						self.experiment3, self.experiment4,
-						self.experiment5]
+						self.experiment5, self.experiment6]
 		
 		if args.experiment != 0:
 			experiments[args.experiment - 1]()
