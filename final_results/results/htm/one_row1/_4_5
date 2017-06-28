@@ -1,0 +1,10 @@
+imgs
+BACKTRAcing TM
+
+test_2
+
+ for _ in range(5):
+        for i in np.random.permutation(len(windows)):
+            run_through_network(layers, windows[i], True)
+            run_through_network(layers, windows[i], True)
+            layers[-1][0].reset()

@@ -1,0 +1,14 @@
+[ 0.          0.59903029  0.          0.          0.50033287  0.          0.
+  0.          0.          0.          0.          0.          0.71231511
+  0.          0.          0.          0.          0.          0.          0.
+  0.33499447  0.          0.71230704  0.          0.          0.
+  0.86342971  0.        ]
+(6, 28)
+13.2943195802
+/home/anca/.local/lib/python2.7/site-packages/matplotlib-2.0.0-py2.7-linux-x86_64.egg/matplotlib/backends/backend_gtk3.py:215: Warning: Source ID 8 was not found when attempting to remove it
+  GLib.source_remove(self._idle_draw_id)
+
+real	2m23.711s
+user	4m21.668s
+sys	0m15.260s
+

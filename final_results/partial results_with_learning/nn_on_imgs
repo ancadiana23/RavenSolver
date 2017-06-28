@@ -1,0 +1,36 @@
+time python2 ./main/nn_agent.py --nn conv --data imgs
+
+[ 0.14176674  0.          0.          0.10350497  0.          0.07100023
+  0.          0.          0.05944024  0.          0.          0.          0.
+  0.          0.          0.          0.          0.          0.          0.
+  0.          0.          0.          0.          0.          0.05819405
+  0.05185062  0.        ]
+(6, 28)
+1.73484590942
+/home/anca/.local/lib/python2.7/site-packages/matplotlib-2.0.0-py2.7-linux-x86_64.egg/matplotlib/backends/backend_gtk3.py:215: Warning: Source ID 8 was not found when attempting to remove it
+  GLib.source_remove(self._idle_draw_id)
+
+real	24m31.368s
+user	26m23.884s
+sys	1m4.052s
+
+
+=============================================================
+time python2 ./main/nn_agent.py --data imgs
+
+[ 0.          0.          0.          0.34358959  0.          0.
+  0.92517627  0.06832404  0.          0.          0.          0.          0.
+  0.          0.          0.          0.          0.          0.
+  0.23633279  0.          0.          0.          0.          0.          0.
+  0.          0.        ]
+(4, 28)
+5.61936673839
+/home/anca/.local/lib/python2.7/site-packages/matplotlib-2.0.0-py2.7-linux-x86_64.egg/matplotlib/backends/backend_gtk3.py:215: Warning: Source ID 8 was not found when attempting to remove it
+  GLib.source_remove(self._idle_draw_id)
+
+real	255m23.415s
+user	643m7.488s
+sys	110m26.464s
+
+
+========================================================

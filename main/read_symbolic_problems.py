@@ -171,11 +171,11 @@ def get_problems(problem_dir):
     problems = read_problems(problem_dir)
     problem_attributes = get_unique_attributes(problems)
     SDRs = []
-    aux = []
+
     for problem in problems:
         problem['Input'] = []
         problem['Output'] = []
-
+        aux = []
         for (x, y) in [('A', 'Input'), ('1', 'Output')]:
             # for every input window, desbribed by letter A-C,
             # and for every output window, described by numbers 1-6,
@@ -186,13 +186,13 @@ def get_problems(problem_dir):
                 create_SDR(problem['content'][chr(index)], problem_attributes, new_SDR)
                 SDR = []
                 for x in new_SDR:
-                    for _ in range(20):
+                    for _ in range(5):
                         SDR += [x]
                 problem[y].append(np.array(SDR))
                 aux += [np.sum(SDR)]
                 index += 1
-
         problem['Input'] = np.array(problem['Input'])
         problem['Output'] = np.array(problem['Output'])
-    print(np.min(aux), np.max(aux), problems[0]['Input'][0].shape)
+
+
     return problems

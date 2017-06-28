@@ -1,8 +1,7 @@
-from parse_images import get_windows
+from parse_images import get_windows, get_problems
 import math
 import numpy as np
 import tensorflow as tf
-from tensorflow.contrib.learn.python.learn.datasets.mnist import read_data_sets
 import matplotlib.pyplot as plt
 
 
@@ -107,7 +106,8 @@ class Encoder:
 
 if __name__ == '__main__':
     folder_name = 'Data/Problems'
-    input_windows = get_windows(folder_name)
+    problems = get_problems(folder_name)
+    input_windows = get_windows(problems)
     (num_windows, height, width) = input_windows.shape
     '''
     for win in input_windows:

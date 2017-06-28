@@ -226,7 +226,8 @@ def write_problems_with_sdrs(input_folder, output_folder):
 
     # get all the windows from the problems in the folder
     # in order to train the encoder
-    input_windows = get_windows(input_folder)
+    problems = get_problems(input_folder)
+    input_windows = get_windows(problems)
     (num_windows, height, width) = input_windows.shape
 
     # initialize and train the encoder
@@ -330,12 +331,10 @@ def get_problems(folder_name):
     return problems
 
 
-def get_windows(folder_name):
+def get_windows(problems):
     """
     Get all the windows out of all the problems in the given folder
     """
-    problems = get_problems(folder_name)
-
     windows = np.append(problems[0]['Input'],
                         problems[0]['Output'],
                         axis=0)

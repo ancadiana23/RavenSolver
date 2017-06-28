@@ -12,6 +12,59 @@ class SingleExperiments:
 			print(''.join([str(x) for x in line]))
 		print('\n')
 
+	def experiment7(self):
+		n = 9
+
+		tm = BTM(numberOfCols=n * n, cellsPerColumn=3,
+                    initialPerm=0.5, connectedPerm=0.5,
+                    minThreshold=7, newSynapseCount=10,
+                    activationThreshold=8,
+                    pamLength=10)
+		x = np.zeros((n, n))
+		y = np.zeros((n, n))
+		z = np.zeros((n, n))
+
+		x[1:-1,  1] = 1
+		x[1:-1, -2] = 1
+		x[ 1, 1:-1] = 1
+		x[-2, 1:-1] = 1
+
+		y[1:-1, 1:-1] = 1
+
+		z = np.array([[int((abs(i - n / 2) + abs(j - n /2) <= 3)) for j in range(n)] for i in range(n)])
+
+		print(z)
+
+		#print(x.astype(int))
+		#print(y.astype(int))
+
+		x = x.reshape((-1))
+		y = y.reshape((-1))
+		z = z.reshape((-1))
+
+
+		win = np.ones((n * n))
+		#print(win)
+		for _ in range(10):
+			tm.compute(win, enableLearn=True, enableInference=True)
+			predict = ((tm.predict(1).reshape((n, n))) * 100).astype(int)
+			print(predict)
+			tm.compute(win, enableLearn=True, enableInference=True)
+			tm.reset()
+
+		for _ in range(3):
+			tm.compute(y, enableLearn=True, enableInference=True)
+			predict = ((tm.predict(1).reshape((n, n))) * 100).astype(int)
+			print(predict)
+			tm.compute(x, enableLearn=True, enableInference=True)
+			predict = ((tm.predict(1).reshape((n, n))) * 100).astype(int)
+			print(predict)
+			print('\n')
+
+		tm.compute(z, enableLearn=True, enableInference=True)
+		predict = ((tm.predict(1).reshape((n, n))) * 100).astype(int)
+		print(predict)
+
 
 	def experiment6(self):
 		n = 15
@@ -395,7 +448,8 @@ class SingleExperiments:
 
 		experiments = [self.experiment1, self.experiment2,
 						self.experiment3, self.experiment4,
-						self.experiment5, self.experiment6]
+						self.experiment5, self.experiment6,
+						self.experiment7]
 
 		if args.experiment != 0:
 			experiments[args.experiment - 1]()
