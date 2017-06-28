@@ -52,10 +52,10 @@ class Agent:
         stride = 1
         self.X_ = tf.reshape(self.X, (1, rows, rows, 1))
         self.H1 = tf.nn.relu(tf.nn.conv2d(self.X_, W_conv_1, strides=[1, stride, stride, 1], padding='SAME') + B_conv_1)
-        self.H2 = tf.nn.relu(tf.nn.conv2d(self.H1, W_conv_2, strides=[1, stride, stride, 1], padding='SAME') + B_conv_2)
-        self.H3 = tf.nn.relu(tf.nn.conv2d(self.H2, W_conv_3, strides=[1, stride, stride, 1], padding='SAME') + B_conv_3)
+        #self.H2 = tf.nn.relu(tf.nn.conv2d(self.H1, W_conv_2, strides=[1, stride, stride, 1], padding='SAME') + B_conv_2)
+        #self.H3 = tf.nn.relu(tf.nn.conv2d(self.H2, W_conv_3, strides=[1, stride, stride, 1], padding='SAME') + B_conv_3)
 
-        self.H4 = tf.nn.sigmoid(tf.matmul(tf.reshape(self.H3, (1, length * L)), W_fc_1) + B_fc_1)
+        self.H4 = tf.nn.sigmoid(tf.matmul(tf.reshape(self.H1, (1, length * L)), W_fc_1) + B_fc_1)
         #self.H4 = tf.reshape(tf.nn.sigmoid(tf.matmul(self.H3, W_fc_2) + B_fc_2), (1, rows, rows, L))
 
         #self.H5 = tf.nn.relu(tf.nn.conv2d_transpose(self.H2, W_conv_3, (1, rows, rows, L) ,strides=[1, stride, stride, 1], padding='SAME') + B_conv_3)
@@ -65,10 +65,12 @@ class Agent:
 
         for layer in [self.X, self.Y]:
             print(layer.shape)
+        """
         print('')
         for layer in [self.X_, self.H1, self.H2,
                       self.H3, self.H4, self.Y_]:
             print(layer.shape)
+        """
 
 
         self.lr = tf.placeholder(tf.float32)
@@ -169,10 +171,12 @@ class Agent:
                                           feed_dict={self.X: problem['Input'][0],
                                                      self.Y: problem['Input'][1],
                                                      self.lr : learning_rate})
+                """
                 _, cost  = self.sess.run([self.train_step, self.err],
                                           feed_dict={self.X: problem['Input'][2],
                                                      self.Y: problem['Output'][res_idx],
                                                      self.lr : learning_rate})
+                """
                 errs += [cost]
                 #if len(errs) > 2 and errs[-2] - errs[-1] < errs[0] / 1000:
                 #    break

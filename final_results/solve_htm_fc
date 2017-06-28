@@ -1,0 +1,519 @@
+SYmb
+
+anca@Blue:~/Current_Semester/Licenta/RavenSolver$ time python2 ./main/nn_agent.py --nn fc --data symbolic
+(3, 670)
+2017-06-28 04:39:23.824444: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+2017-06-28 04:39:23.824480: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+2017-06-28 04:39:23.824488: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+2017-06-28 04:39:23.855765: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:901] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2017-06-28 04:39:23.856061: I tensorflow/core/common_runtime/gpu/gpu_device.cc:887] Found device 0 with properties: 
+name: GeForce 610M
+major: 2 minor: 1 memoryClockRate (GHz) 1.48
+pciBusID 0000:01:00.0
+Total memory: 964,44MiB
+Free memory: 656,00MiB
+2017-06-28 04:39:23.856082: I tensorflow/core/common_runtime/gpu/gpu_device.cc:908] DMA: 0 
+2017-06-28 04:39:23.856098: I tensorflow/core/common_runtime/gpu/gpu_device.cc:918] 0:   Y 
+2017-06-28 04:39:23.856107: I tensorflow/core/common_runtime/gpu/gpu_device.cc:950] Ignoring visible gpu device (device: 0, name: GeForce 610M, pci bus id: 0000:01:00.0) with Cuda compute capability 2.1. The minimum required Cuda capability is 3.0.
+Start training
+2x1 Basic Problem 12
+((6, 670), (670,), 77.085884)
+(5, 1)
+
+
+2x1 Basic Problem 09
+((6, 670), (670,), 50.304192)
+(0, 0)
+
+
+2x1 Basic Problem 17
+((6, 670), (670,), 43.112289)
+(0, 0)
+
+
+2x1 Basic Problem 04
+((6, 670), (670,), 20.170027)
+(2, 0)
+
+
+2x1 Basic Problem 10
+((6, 670), (670,), 30.829229)
+(3, 3)
+
+
+2x1 Basic Problem 14
+((6, 670), (670,), 11.333488)
+(2, 3)
+
+
+2x1 Classmates' Problem 01
+((6, 670), (670,), 25.14566)
+(1, 3)
+
+
+2x1 Challenge Problem 03
+((6, 670), (670,), 32.121902)
+(5, 2)
+
+
+2x1 Challenge Problem 06
+((6, 670), (670,), 12.020768)
+(1, 2)
+
+
+2x1 Basic Problem 11
+((6, 670), (670,), 19.595552)
+(3, 0)
+
+
+2x1 Basic Problem 16
+((6, 670), (670,), 12.267315)
+(2, 5)
+
+
+2x1 Basic Problem 08
+((6, 670), (670,), 30.041027)
+(0, 2)
+
+
+2x1 Basic Problem 20
+((6, 670), (670,), 28.966766)
+(4, 4)
+
+
+2x1 Basic Problem 03
+((6, 670), (670,), 10.222356)
+(3, 3)
+
+
+2x1 Basic Problem 02
+((6, 670), (670,), 7.3228388)
+(5, 5)
+
+
+2x1 Challenge Problem 02
+((6, 670), (670,), 9.999114)
+(3, 5)
+
+
+2x1 Challenge Problem 01
+((6, 670), (670,), 53.62159)
+(0, 1)
+
+
+2x1 Basic Problem 18
+((6, 670), (670,), 30.483891)
+(1, 5)
+
+
+2x1 Challenge Problem 04
+((6, 670), (670,), 4.2906814)
+(5, 1)
+
+
+2x1 Basic Problem 01
+((6, 670), (670,), 4.48417)
+(4, 4)
+
+
+2x1 Basic Problem 15
+((6, 670), (670,), 24.145718)
+(5, 5)
+
+
+2x1 Classmates' Problem 02
+((6, 670), (670,), 16.002903)
+(4, 3)
+
+
+2x1 Basic Problem 05
+((6, 670), (670,), 16.396538)
+(1, 1)
+
+
+2x1 Basic Problem 06
+((6, 670), (670,), 3.4692903)
+(4, 4)
+
+
+2x1 Basic Problem 13
+((6, 670), (670,), 5.369679)
+(1, 2)
+
+
+2x1 Basic Problem 19
+((6, 670), (670,), 13.55475)
+(0, 0)
+
+
+2x1 Basic Problem 07
+((6, 670), (670,), 43.744987)
+(1, 3)
+
+
+2x1 Challenge Problem 05
+((6, 670), (670,), 33.932037)
+(3, 1)
+
+
+[ 0.          0.18807276  0.14771354  0.          0.09301157  0.          0.
+  0.          0.          0.          0.          0.          0.19343744
+  0.32584616  0.24729468  0.          0.          0.          0.
+  0.27500402  0.23952616  0.          0.2257548   0.08397764  0.
+  0.23390397  0.          0.        ]
+(11, 28)
+8.04836687723
+/home/anca/.local/lib/python2.7/site-packages/matplotlib-2.0.0-py2.7-linux-x86_64.egg/matplotlib/backends/backend_gtk3.py:215: Warning: Source ID 8 was not found when attempting to remove it
+  GLib.source_remove(self._idle_draw_id)
+
+real	1m3.473s
+user	2m9.948s
+sys	0m10.384s
+
+
+=====================================================================
+SDR
+
+anca@Blue:~/Current_Semester/Licenta/RavenSolver$ time python2 ./main/nn_agent.py --nn fc --data sdrs
+(3, 6724)
+2017-06-28 04:41:34.288844: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+2017-06-28 04:41:34.288879: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+2017-06-28 04:41:34.288887: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+2017-06-28 04:41:34.312743: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:901] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2017-06-28 04:41:34.312998: I tensorflow/core/common_runtime/gpu/gpu_device.cc:887] Found device 0 with properties: 
+name: GeForce 610M
+major: 2 minor: 1 memoryClockRate (GHz) 1.48
+pciBusID 0000:01:00.0
+Total memory: 964,44MiB
+Free memory: 649,62MiB
+2017-06-28 04:41:34.313017: I tensorflow/core/common_runtime/gpu/gpu_device.cc:908] DMA: 0 
+2017-06-28 04:41:34.313026: I tensorflow/core/common_runtime/gpu/gpu_device.cc:918] 0:   Y 
+2017-06-28 04:41:34.313040: I tensorflow/core/common_runtime/gpu/gpu_device.cc:950] Ignoring visible gpu device (device: 0, name: GeForce 610M, pci bus id: 0000:01:00.0) with Cuda compute capability 2.1. The minimum required Cuda capability is 3.0.
+Start training
+2x1 Basic Problem 19
+((6, 6724), (6724,), 3441.4521)
+(0, 1)
+
+
+2x1 Basic Problem 06
+((6, 6724), (6724,), 3054.8271)
+(4, 1)
+
+
+2x1 Basic Problem 03
+((6, 6724), (6724,), 1454.4476)
+(3, 0)
+
+
+2x1 Basic Problem 15
+((6, 6724), (6724,), 406.27515)
+(5, 0)
+
+
+2x1 Basic Problem 11
+((6, 6724), (6724,), 652.87518)
+(3, 0)
+
+
+2x1 Basic Problem 08
+((6, 6724), (6724,), 1735.7927)
+(0, 2)
+
+
+2x1 Basic Problem 10
+((6, 6724), (6724,), 2346.209)
+(3, 3)
+
+
+2x1 Basic Problem 14
+((6, 6724), (6724,), 1704.7506)
+(2, 2)
+
+
+2x1 Basic Problem 13
+((6, 6724), (6724,), 1529.9553)
+(1, 3)
+
+
+2x1 Basic Problem 02
+((6, 6724), (6724,), 956.28491)
+(5, 4)
+
+
+2x1 Classmates' Problem 01
+((6, 6724), (6724,), 690.80969)
+(1, 2)
+
+
+2x1 Basic Problem 20
+((6, 6724), (6724,), 1376.6646)
+(4, 4)
+
+
+2x1 Basic Problem 18
+((6, 6724), (6724,), 831.79163)
+(1, 5)
+
+
+2x1 Challenge Problem 05
+((6, 6724), (6724,), 654.44586)
+(3, 2)
+
+
+2x1 Challenge Problem 03
+((6, 6724), (6724,), 387.84671)
+(5, 2)
+
+
+2x1 Challenge Problem 02
+((6, 6724), (6724,), 175.63187)
+(3, 5)
+
+
+2x1 Basic Problem 09
+((6, 6724), (6724,), 1194.231)
+(0, 3)
+
+
+2x1 Basic Problem 16
+((6, 6724), (6724,), 169.51382)
+(2, 3)
+
+
+2x1 Basic Problem 07
+((6, 6724), (6724,), 1446.0422)
+(1, 0)
+
+
+2x1 Basic Problem 17
+((6, 6724), (6724,), 336.30627)
+(0, 3)
+
+
+2x1 Basic Problem 01
+((6, 6724), (6724,), 637.2876)
+(4, 0)
+
+
+2x1 Challenge Problem 01
+((6, 6724), (6724,), 458.58356)
+(0, 1)
+
+
+2x1 Basic Problem 04
+((6, 6724), (6724,), 250.32066)
+(2, 2)
+
+
+2x1 Basic Problem 05
+((6, 6724), (6724,), 643.17999)
+(1, 4)
+
+
+2x1 Basic Problem 12
+((6, 6724), (6724,), 297.63327)
+(5, 1)
+
+
+2x1 Challenge Problem 06
+((6, 6724), (6724,), 385.89749)
+(1, 4)
+
+
+2x1 Challenge Problem 04
+((6, 6724), (6724,), 296.55023)
+(5, 3)
+
+
+2x1 Classmates' Problem 02
+((6, 6724), (6724,), 1213.894)
+(4, 5)
+
+
+[ 0.          0.          0.          0.          0.          0.
+  0.27019076  0.04597751  0.          0.          0.          0.15843555
+  0.          0.          0.          0.          0.          0.          0.
+  0.          0.          0.          0.1903905   0.          0.          0.
+  0.          0.        ]
+(4, 28)
+2.37497969888
+/home/anca/.local/lib/python2.7/site-packages/matplotlib-2.0.0-py2.7-linux-x86_64.egg/matplotlib/backends/backend_gtk3.py:215: Warning: Source ID 8 was not found when attempting to remove it
+  GLib.source_remove(self._idle_draw_id)
+
+real	16m35.695s
+user	42m44.380s
+sys	3m47.516s
+
+========================================================
+imgs
+
+anca@Blue:~/Current_Semester/Licenta/RavenSolver$ time python2 ./main/nn_agent.py --nn fc --data imgs
+(3, 6724)
+2017-06-28 05:23:56.738802: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+2017-06-28 05:23:56.738832: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+2017-06-28 05:23:56.738846: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+2017-06-28 05:23:56.771051: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:901] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2017-06-28 05:23:56.771311: I tensorflow/core/common_runtime/gpu/gpu_device.cc:887] Found device 0 with properties: 
+name: GeForce 610M
+major: 2 minor: 1 memoryClockRate (GHz) 1.48
+pciBusID 0000:01:00.0
+Total memory: 964,44MiB
+Free memory: 651,00MiB
+2017-06-28 05:23:56.771336: I tensorflow/core/common_runtime/gpu/gpu_device.cc:908] DMA: 0 
+2017-06-28 05:23:56.771347: I tensorflow/core/common_runtime/gpu/gpu_device.cc:918] 0:   Y 
+2017-06-28 05:23:56.771363: I tensorflow/core/common_runtime/gpu/gpu_device.cc:950] Ignoring visible gpu device (device: 0, name: GeForce 610M, pci bus id: 0000:01:00.0) with Cuda compute capability 2.1. The minimum required Cuda capability is 3.0.
+Start training
+2x1 Basic Problem 19
+((6, 6724), (6724,), 3422.5466)
+(0, 1)
+
+
+2x1 Basic Problem 06
+((6, 6724), (6724,), 3010.02)
+(4, 1)
+
+
+2x1 Basic Problem 03
+((6, 6724), (6724,), 1461.4922)
+(3, 0)
+
+
+2x1 Basic Problem 15
+((6, 6724), (6724,), 402.76788)
+(5, 0)
+
+
+2x1 Basic Problem 11
+((6, 6724), (6724,), 665.10022)
+(3, 0)
+
+
+2x1 Basic Problem 08
+((6, 6724), (6724,), 1704.802)
+(0, 2)
+
+
+2x1 Basic Problem 10
+((6, 6724), (6724,), 2310.6523)
+(3, 3)
+
+
+2x1 Basic Problem 14
+((6, 6724), (6724,), 1674.4353)
+(2, 3)
+
+
+2x1 Basic Problem 13
+((6, 6724), (6724,), 1529.7949)
+(1, 3)
+
+
+2x1 Basic Problem 02
+((6, 6724), (6724,), 937.896)
+(5, 4)
+
+
+2x1 Classmates' Problem 01
+((6, 6724), (6724,), 689.05823)
+(1, 2)
+
+
+2x1 Basic Problem 20
+((6, 6724), (6724,), 1341.6501)
+(4, 2)
+
+
+2x1 Basic Problem 18
+((6, 6724), (6724,), 817.68726)
+(1, 5)
+
+
+2x1 Challenge Problem 05
+((6, 6724), (6724,), 682.04089)
+(3, 2)
+
+
+2x1 Challenge Problem 03
+((6, 6724), (6724,), 383.81052)
+(5, 2)
+
+
+2x1 Challenge Problem 02
+((6, 6724), (6724,), 172.50122)
+(3, 5)
+
+
+2x1 Basic Problem 09
+((6, 6724), (6724,), 1178.5848)
+(0, 3)
+
+
+2x1 Basic Problem 16
+((6, 6724), (6724,), 164.78818)
+(2, 3)
+
+
+2x1 Basic Problem 07
+((6, 6724), (6724,), 1441.7361)
+(1, 0)
+
+
+2x1 Basic Problem 17
+((6, 6724), (6724,), 342.23242)
+(0, 2)
+
+
+2x1 Basic Problem 01
+((6, 6724), (6724,), 637.10022)
+(4, 0)
+
+
+2x1 Challenge Problem 01
+((6, 6724), (6724,), 461.05972)
+(0, 1)
+
+
+2x1 Basic Problem 04
+((6, 6724), (6724,), 236.86923)
+(2, 2)
+
+
+2x1 Basic Problem 05
+((6, 6724), (6724,), 649.95874)
+(1, 4)
+
+
+2x1 Basic Problem 12
+((6, 6724), (6724,), 289.25397)
+(5, 1)
+
+
+2x1 Challenge Problem 06
+((6, 6724), (6724,), 385.78616)
+(1, 4)
+
+
+2x1 Challenge Problem 04
+((6, 6724), (6724,), 299.60272)
+(5, 3)
+
+
+2x1 Classmates' Problem 02
+((6, 6724), (6724,), 1203.059)
+(4, 5)
+
+
+[ 0.          0.          0.          0.          0.          0.
+  0.26512041  0.          0.          0.          0.          0.          0.
+  0.          0.          0.          0.          0.          0.          0.
+  0.          0.          0.19192425  0.          0.          0.          0.
+  0.        ]
+(2, 28)
+1.63230235058
+/home/anca/.local/lib/python2.7/site-packages/matplotlib-2.0.0-py2.7-linux-x86_64.egg/matplotlib/backends/backend_gtk3.py:215: Warning: Source ID 8 was not found when attempting to remove it
+  GLib.source_remove(self._idle_draw_id)
+
+real	13m51.925s
+user	36m36.020s
+sys	3m17.816s
+
