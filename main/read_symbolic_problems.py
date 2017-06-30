@@ -194,5 +194,4 @@ def get_problems(problem_dir):
         problem['Input'] = np.array(problem['Input'])
         problem['Output'] = np.array(problem['Output'])
 
-
     return problems

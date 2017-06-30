@@ -353,7 +353,7 @@ def main(args):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--data", type=str, default = 'imgs')
-    #parser.add_argument("--action", type=str, default = 'test')
+    parser.add_argument("--experiment", type=str, default = 'solve')
     args = parser.parse_args()
 
     main(args)

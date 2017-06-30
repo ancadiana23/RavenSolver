@@ -39,23 +39,17 @@ class Agent:
         W_conv_3 = tf.Variable(tf.truncated_normal([K, K, L, L], stddev=0.1))
         B_conv_3 = tf.Variable(tf.ones([L])/10)
 
-        #W_conv_4 = tf.Variable(tf.truncated_normal([K, K, 1, L], stddev=0.1))
-        #B_conv_4 = tf.Variable(tf.ones([1])/10)
 
         W_fc_1 = tf.Variable(tf.truncated_normal([length * L, M], stddev=0.1))
         B_fc_1 = tf.Variable(tf.ones([M])/10)
 
-        #W_fc_2 = tf.Variable(tf.truncated_normal([M, length * L], stddev=0.1))
-        #B_fc_2 = tf.Variable(tf.ones([length * L])/10)
-
-
         stride = 1
         self.X_ = tf.reshape(self.X, (1, rows, rows, 1))
         self.H1 = tf.nn.relu(tf.nn.conv2d(self.X_, W_conv_1, strides=[1, stride, stride, 1], padding='SAME') + B_conv_1)
-        #self.H2 = tf.nn.relu(tf.nn.conv2d(self.H1, W_conv_2, strides=[1, stride, stride, 1], padding='SAME') + B_conv_2)
-        #self.H3 = tf.nn.relu(tf.nn.conv2d(self.H2, W_conv_3, strides=[1, stride, stride, 1], padding='SAME') + B_conv_3)
+        self.H2 = tf.nn.relu(tf.nn.conv2d(self.H1, W_conv_2, strides=[1, stride, stride, 1], padding='SAME') + B_conv_2)
+        self.H3 = tf.nn.relu(tf.nn.conv2d(self.H2, W_conv_3, strides=[1, stride, stride, 1], padding='SAME') + B_conv_3)
 
-        self.H4 = tf.nn.sigmoid(tf.matmul(tf.reshape(self.H1, (1, length * L)), W_fc_1) + B_fc_1)
+        self.H4 = tf.nn.sigmoid(tf.matmul(tf.reshape(self.H3, (1, length * L)), W_fc_1) + B_fc_1)
         #self.H4 = tf.reshape(tf.nn.sigmoid(tf.matmul(self.H3, W_fc_2) + B_fc_2), (1, rows, rows, L))
 
         #self.H5 = tf.nn.relu(tf.nn.conv2d_transpose(self.H2, W_conv_3, (1, rows, rows, L) ,strides=[1, stride, stride, 1], padding='SAME') + B_conv_3)
@@ -65,12 +59,12 @@ class Agent:
 
         for layer in [self.X, self.Y]:
             print(layer.shape)
-        """
+
         print('')
         for layer in [self.X_, self.H1, self.H2,
                       self.H3, self.H4, self.Y_]:
             print(layer.shape)
-        """
+
 
 
         self.lr = tf.placeholder(tf.float32)
