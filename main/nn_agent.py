@@ -50,10 +50,6 @@ class Agent:
         self.H3 = tf.nn.relu(tf.nn.conv2d(self.H2, W_conv_3, strides=[1, stride, stride, 1], padding='SAME') + B_conv_3)
 
         self.H4 = tf.nn.sigmoid(tf.matmul(tf.reshape(self.H3, (1, length * L)), W_fc_1) + B_fc_1)
-        #self.H4 = tf.reshape(tf.nn.sigmoid(tf.matmul(self.H3, W_fc_2) + B_fc_2), (1, rows, rows, L))
-
-        #self.H5 = tf.nn.relu(tf.nn.conv2d_transpose(self.H2, W_conv_3, (1, rows, rows, L) ,strides=[1, stride, stride, 1], padding='SAME') + B_conv_3)
-        #self.H6 = tf.nn.relu(tf.nn.conv2d_transpose(self.H2, W_conv_4, (1, rows, rows, 1) ,strides=[1, stride, stride, 1], padding='SAME') + B_conv_4)
 
         self.Y_ = tf.reshape(self.H4, [rows * rows])
 
@@ -97,35 +93,12 @@ class Agent:
         W1 = tf.Variable(tf.truncated_normal([length, length], stddev=0.1))
         B1 = tf.Variable(tf.ones([length])/10)
 
-        #W2 = tf.Variable(tf.truncated_normal([length, length], stddev=0.1))
-        #B2 = tf.Variable(tf.ones([length])/10)
-
-        #W3 = tf.Variable(tf.truncated_normal([length, length], stddev=0.1))
-        #B3 = tf.Variable(tf.ones([length])/10)
-
-        #W4 = tf.Variable(tf.truncated_normal([length, length], stddev=0.1))
-        #B4 = tf.Variable(tf.ones([length])/10)
-
-        #W5 = tf.Variable(tf.truncated_normal([length, length], stddev=0.1))
-        #B5 = tf.Variable(tf.ones([length])/10)
-
-        #W6 = tf.Variable(tf.truncated_normal([length, length], stddev=0.1))
-        #B6 = tf.Variable(tf.ones([length])/10)
 
         self.X_ = tf.reshape(self.X, [1, length])
 
         self.H1 = tf.nn.sigmoid(tf.matmul(self.X_, W1) + B1)
-        #self.H2 = tf.nn.sigmoid(tf.matmul(self.H1, W2) + B2)
-        #self.H3 = tf.nn.sigmoid(tf.matmul(self.H2, W3) + B3)
-        #self.H4 = tf.nn.sigmoid(tf.matmul(self.H3, W4) + B4)
-        #self.H5 = tf.nn.sigmoid(tf.matmul(self.H4, W5) + B5)
-        #self.H6 = tf.nn.sigmoid(tf.matmul(self.H5, W6) + B6)
 
         self.Y_ = tf.reshape(self.H1, [length])
-
-        #for layer in [self.X_, self.H1, self.H2, self.H3, self.H4, self.H5, self.H6, self.Y_]:
-        #    print(layer.shape)
-
 
         self.lr = tf.placeholder(tf.float32)
         self.err = tf.reduce_sum(tf.pow(self.Y_ - self.Y,  2))
@@ -178,10 +151,11 @@ class Agent:
                     break
 
             #print(errs)
+            '''
             plt.clf()
             plt.plot(range(len(errs)), errs, color='blue')
             plt.savefig('graphs_' + nn_name + '/' + problem['Attributes']['title'] + '.png')
-
+            '''
             output = self.sess.run([self.Y_], feed_dict={self.X: problem['Input'][2]})
 
             '''

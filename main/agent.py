@@ -38,21 +38,17 @@ def bk_tm_compute(layer, input_data, learn=True):
     return input_data
 
 
-def linearize(window):
-    """
-    Reshape a matrix intro a list
-    """
-    (height, width) = window.shape
-    return window.reshape((height * width, ))
-
-
-def reverse_linearize(window):
-    """
-    Resahpe a liniarized matrix to its ogirinal form
-    """
-    length = len(window)
-    new_size = length ** 0.5
-    return window.reshape((new_size, new_size))
+def write_windows(file_name, problem, predict):
+    with open(file_name, 'w+') as f:
+        for win in problem['Input']:
+            size = int(len(win) ** 0.5)
+            for line in win.reshape((size, size)):
+                f.write(''.join([str(x) for x in line]) + '\n')
+            f.write('\n')
+        m = np.mean(predict)
+        for line in predict.reshape((size, size)):
+            f.write(''.join([str(int(x >= m)) for x in line]) + '\n')
+        f.write('\n')
 
 
 def run_through_network(layers, input_data, learn=True):
@@ -62,7 +58,7 @@ def run_through_network(layers, input_data, learn=True):
     return last_input
 
 
-def train_first_row(layers, problems):
+def train_input(layers, problems, indexes):
     """
     Train network
 
@@ -72,15 +68,22 @@ def train_first_row(layers, problems):
     """
     epochs = 3
     for _ in range(epochs):
-        #for i in np.random.permutation(len(problems)):
-        for i in range(len(problems)):
+        #for i in range(len(problems)):
+        for i in np.random.permutation(len(problems)):
             # run the input windows through the network
-            run_through_network(layers, problems[i]['Input'][0], True)
-            run_through_network(layers, problems[i]['Input'][1], True)
+            for j in indexes:
+                run_through_network(layers, problems[i]['Input'][j], True)
 
-            run_through_network(layers, problems[i]['Input'][0], True)
-            run_through_network(layers, problems[i]['Input'][1], True)
+            layers[-1][0].reset()
 
+
+def train_windows(layers, problems, sequence_len):
+    windows = parse_images.get_windows(problems)
+
+    for _ in range(5):
+        for i in np.random.permutation(len(windows)):
+            for _ in range(sequence_len):
+                run_through_network(layers, windows[i], True)
             layers[-1][0].reset()
 
 
@@ -92,7 +95,6 @@ def train(layers, problems):
     layers: list of tuples of the form (layer, method)
     problems: list if training problems
     """
-
     epochs = 4
     for _ in range(epochs):
         #for i in range(len(problems)):
@@ -109,7 +111,7 @@ def train(layers, problems):
             layers[-1][0].reset()
 
 
-def test(layers, problems):
+def test(layers, problems, write_output):
     """
     Test network
 
@@ -142,9 +144,6 @@ def test(layers, problems):
             # compare the result with the predicted state
             matches[j] = np.sum(last_input * predict) / (np.sum(last_input) + np.sum(predict))
 
-        #print(problems[i]['Attributes']['title'], matches)
-        #vote = np.argmax(matches)
-
         # if the precition was correct add it to the correct_predictions list
         vote = np.argmax(matches)
         print(problems[i]['Attributes']['title'], vote, res_idx)
@@ -156,50 +155,20 @@ def test(layers, problems):
         run_through_network(layers, problems[i]['Output'][vote], False)
         layers[-1][0].reset()
 
-        '''
-         # write output
-        with open('output/htm/two_rows/' + str(i), 'w+') as f:
-            for win in problems[i]['Input']:
-                size = int(len(win) ** 0.5)
-                for line in win.reshape((size, size)):
-                    f.write(''.join([str(x) for x in line]) + '\n')
-                f.write('\n')
-            m = np.mean(predict)
-            for line in predict.reshape((size, size)):
-                f.write(''.join([str(int(x >= m)) for x in line]) + '\n')
-            f.write('\n')
-        '''
-
+        if write_output:
+            write_windows('./output/htm/4/' + str(i) + '.txt', problems[i], predict)
 
     print(correct_predictions)
     print(num_correct_predictions, len(correct_predictions))
     print(np.sum(correct_predictions) * 100.0 / len(correct_predictions))
 
 
-def test_2(layers, problems):
+def test_2_windows(layers, problems, write_output):
     correct_predictions = np.zeros(len(problems))
     num_correct_predictions = 0
-    windows = parse_images.get_windows(problems)
 
-
-    print("Run windows")
-
-    for _ in range(2):
-        for i in np.random.permutation(len(windows)):
-            run_through_network(layers, windows[i], True)
-            run_through_network(layers, windows[i], True)
-            layers[-1][0].reset()
-
-    print("Run problems")
-    for _ in range(5):
-        for i in np.random.permutation(len(problems)):
-            run_through_network(layers, problems[i]['Input'][0], True)
-            run_through_network(layers, problems[i]['Input'][1], True)
-            layers[-1][0].reset()
-
-    print("Test")
     for i in range(len(problems)):
-        for _ in range(10):
+        for _ in range(20):
             run_through_network(layers, problems[i]['Input'][0], True)
             run_through_network(layers, problems[i]['Input'][1], True)
             layers[-1][0].reset()
@@ -216,13 +185,7 @@ def test_2(layers, problems):
             # compare the result with the predicted state
 
             matches[j] = np.sum(last_input * predict) / (np.sum(last_input) + np.sum(predict))
-            '''
-            print np.sum(last_input * predict), matches[j],
-            if j == res_idx:
-                print "*"
-            else:
-                print ""
-            '''
+
 
         vote = np.argmax(matches)
         print(problems[i]['Attributes']['title'], vote, res_idx)
@@ -235,76 +198,56 @@ def test_2(layers, problems):
         run_through_network(layers, problems[i]['Output'][vote], False)
         layers[-1][0].reset()
 
-        '''
-        # write output
-        with open('output/htm/one_row/' + str(i), 'w+') as f:
-            for win in problems[i]['Input']:
-                size = int(len(win) ** 0.5)
-                for line in win.reshape((size, size)):
-                    f.write(''.join([str(x) for x in line]) + '\n')
-                f.write('\n')
-            m = np.mean(predict)
-            for line in predict.reshape((size, size)):
-                f.write(''.join([str(int(x >= m)) for x in line]) + '\n')
-            f.write('\n')
-        '''
+        if write_output:
+            write_windows('./output/htm/2/' + str(i) + '.txt', problems[i], predict)
 
     print(correct_predictions)
     print(num_correct_predictions, len(correct_predictions))
     print(np.sum(correct_predictions) * 100.0 / len(correct_predictions))
 
 
-def run(layers, problems):
-    #train_first_row(layers, problems)
-    #train(layers, problems)
-    #test(layers, problems)
-    test_2(layers, problems)
-
-
-def run_imgs():
+def init_imgs(write_output):
     folder_name = 'Data/Problems'
     problems = parse_images.get_problems(folder_name)
+
     for problem in problems:
         problem['Input'] = problem['Input'].reshape((3, -1))
         problem['Output'] = problem['Output'].reshape((6, -1))
 
     # dimenstions
-    num_colls1 = len(problems[0]['Input'][0])
-    '''
-    num_colls2 = num_colls1 / 2
-    num_colls3 = num_colls2 / 2
+    num_cols1 = len(problems[0]['Input'][0])
+    tm_cols = num_cols1
+    layers = []
 
-    # layers
+    if not write_output:
+        num_cols2 = num_cols1 / 2
+        num_cols3 = num_cols2 / 2
+        sp1 = SpatialPooler(inputDimensions=(num_cols1, ),
+                            columnDimensions=(num_cols2, ),
+                            numActiveColumnsPerInhArea=-1,
+                            localAreaDensity=0.05)
 
-    sp1 = SpatialPooler(inputDimensions=(num_colls1, ),
-                        columnDimensions=(num_colls2, ),
-                        numActiveColumnsPerInhArea=-1,
-                        localAreaDensity=0.05)
+        sp2 = SpatialPooler(inputDimensions=(num_cols2, ),
+                            columnDimensions=(num_cols3, ),
+                            numActiveColumnsPerInhArea=-1,
+                            localAreaDensity=0.05)
+        tm_cols = num_cols3
+        layers = [(sp1, sp_compute),
+                  (sp2, sp_compute)]
 
-    sp2 = SpatialPooler(inputDimensions=(num_colls2, ),
-                        columnDimensions=(num_colls3, ),
-                        numActiveColumnsPerInhArea=-1,
-                        localAreaDensity=0.05)
 
-    '''
-    bckTM = BTM(numberOfCols=num_colls1, cellsPerColumn=10,
+    bckTM = BTM(numberOfCols=tm_cols, cellsPerColumn=10,
                 initialPerm=0.5, connectedPerm=0.5,
                 minThreshold=10, newSynapseCount=10,
                 activationThreshold=10,
                 pamLength=10)
 
+    layers += [(bckTM, bk_tm_compute)]
 
-    #layers = [(sp1, sp_compute),
-    #          (sp2, sp_compute),
-    #          (bckTM, bk_tm_compute)]
-
-    layers = [(bckTM, bk_tm_compute)]
+    return (layers, problems)
 
 
-    run(layers, problems)
-
-
-def run_sdrs():
+def init_sdrs():
     folder_name = 'Data/Problems_sdr'
     problems = parse_images.get_problems(folder_name)
 
@@ -313,47 +256,73 @@ def run_sdrs():
         problem['Input'] = problem['SDRs'][:3].reshape((3, -1))
         problem['Output'] = problem['SDRs'][3:].reshape((6, -1))
 
-    num_colls = len(problems[0]['Input'][0])
-    bckTM = BTM(numberOfCols=num_colls, cellsPerColumn=15,
+    num_cols = len(problems[0]['Input'][0])
+    bckTM = BTM(numberOfCols=num_cols, cellsPerColumn=15,
             initialPerm=0.5, connectedPerm=0.5,
             minThreshold=10, newSynapseCount=10,
             activationThreshold=10,
             pamLength=10)
 
     layers = [(bckTM, bk_tm_compute)]
-    run(layers, problems)
+
+    return (layers, problems)
 
 
-def run_symbolic():
+def init_symbolic():
     folder_name = 'Data/Problems_txt'
     problems = read_symbolic_problems.get_problems(folder_name)
 
-    num_colls = len(problems[0]['Input'][0])
-    bckTM = BTM(numberOfCols=num_colls, cellsPerColumn=15,
+    num_cols = len(problems[0]['Input'][0])
+    bckTM = BTM(numberOfCols=num_cols, cellsPerColumn=15,
             initialPerm=0.5, connectedPerm=0.5,
             minThreshold=10, newSynapseCount=10,
             activationThreshold=10,
             pamLength=10)
 
     layers = [(bckTM, bk_tm_compute)]
-    run(layers, problems)
+    return (layers, problems)
 
 
 def main(args):
     if args.data == 'imgs':
-        run_imgs()
+        (layers, problems) = init_imgs(args.write_pred)
 
     elif args.data == 'sdrs':
-        run_sdrs()
+        (layers, problems) = init_sdrs()
 
     elif args.data == 'symbolic':
-        run_symbolic()
+        (layers, problems) = init_symbolic()
+
+    if args.ex == 'memorize':
+        train(layers, problems)
+        test(layers, problems, args.write_pred)
+
+    elif args.ex == 'solve':
+        if args.app =='4':
+            train_windows(layers, problems, 4)
+            train_input(layers, problems, [0, 1, 0, 1])
+            test(layers, problems, args.write_pred)
+
+        if args.app == '2':
+            train_windows(layers, problems, 2)
+            train_input(layers, problems, [0, 1])
+            test_2_windows(layers, problems, args.write_pred)
+
 
 
 if __name__ == "__main__":
     parser = ArgumentParser()
+    # imgs, sdrs, symbolic
     parser.add_argument("--data", type=str, default = 'imgs')
-    parser.add_argument("--experiment", type=str, default = 'solve')
+
+    # experiment -> memorize, solve,
+    parser.add_argument("--ex", type=str, default = 'solve')
+
+    # approach -> 2, 4
+    parser.add_argument("--app", type=str, default = '2')
+
+    # write predicted window
+    parser.add_argument("--w", dest="write_pred", action = "store_true")
     args = parser.parse_args()
 
     main(args)
