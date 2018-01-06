@@ -112,7 +112,7 @@ class Agent:
         self.sess.run(self.init_var)
 
 
-    def train(self, problems, nn_name, max_epochs):
+    def train(self, problems, nn_name, max_epochs, experiment):
         print("Start training")
         """
         Train the neural network
@@ -138,12 +138,11 @@ class Agent:
                                           feed_dict={self.X: problem['Input'][0],
                                                      self.Y: problem['Input'][1],
                                                      self.lr : learning_rate})
-                """
-                _, cost  = self.sess.run([self.train_step, self.err],
-                                          feed_dict={self.X: problem['Input'][2],
-                                                     self.Y: problem['Output'][res_idx],
-                                                     self.lr : learning_rate})
-                """
+                if experiment == 'memorize':
+                    _, cost  = self.sess.run([self.train_step, self.err],
+                                              feed_dict={self.X: problem['Input'][2],
+                                                         self.Y: problem['Output'][res_idx],
+                                                         self.lr : learning_rate})
                 errs += [cost]
                 #if len(errs) > 2 and errs[-2] - errs[-1] < errs[0] / 1000:
                 #    break
@@ -244,7 +243,7 @@ def main(args):
 
         agent = Agent()
         agent.init_fc(len(problems[0]['Input'][0]))
-        errs = agent.train(problems, args.nn, 1500)
+        errs = agent.train(problems, args.nn, 1500, args.ex)
 
     if args.nn == 'conv':
         # conv
@@ -253,13 +252,15 @@ def main(args):
 
         agent = Agent()
         agent.init_conv(len(problems[0]['Input'][0]))
-        errs = agent.train(problems, args.nn, 500)
+        errs = agent.train(problems, args.nn, 500, args.ex)
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--nn", type=str, default = 'fc')
     parser.add_argument("--data", type=str, default = 'imgs')
+    # experiment -> memorize, solve,
+    parser.add_argument("--ex", type=str, default = 'solve')
     args = parser.parse_args()
 
     main(args)

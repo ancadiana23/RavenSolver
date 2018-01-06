@@ -2,6 +2,8 @@ import os
 import re
 import numpy as np
 
+from yaml import load
+
 
 def unique_attributes(problem, problem_attributes):
     """
@@ -31,7 +33,11 @@ def unique_attributes(problem, problem_attributes):
         else:
             # when a leaf in the problem is reached add the value of the leaf
             # to a list in the problem_attributes
-            problem_attributes[key].add(problem[key])
+            if type(problem[key]) is list:
+                for val in problem[key]:
+                    problem_attributes[key].add(val)
+            else:
+                problem_attributes[key].add(problem[key])
 
 
 def read_content(lines, index, level):
@@ -69,7 +75,7 @@ def read_content(lines, index, level):
 
     return content, index
 
-
+'''
 def get_unique_attributes(problems):
     """
     Recursive functiona that creates a tree of all the possible attributes in the
@@ -85,6 +91,28 @@ def get_unique_attributes(problems):
     for problem in problems:
         for key in problem['content']:
             unique_attributes(problem['content'][key], problem_attributes)
+
+    return problem_attributes
+'''
+
+
+def get_unique_attributes(problems):
+    """
+    Recursive functiona that creates a tree of all the possible attributes in the
+    list of problems
+
+    Args:
+    problems: list of dictioaries describing the problems
+
+    Returns:
+    attributes: dictionary of all the possible attributes in the list of problems
+    """
+    problem_attributes = {}
+    for problem in problems:
+        for fig in problem['Input']:
+            unique_attributes(fig, problem_attributes)
+        for fig in problem['Output']:
+            unique_attributes(fig, problem_attributes)
 
     return problem_attributes
 
@@ -111,6 +139,32 @@ def read_problems(problem_dir):
             lines = f.readlines()
             new_problem['content'], _ = read_content(lines, 0, 0)
             problems.append(new_problem)
+
+    return problems
+
+
+def read_yml_problems(problem_dir):
+    """
+    Load problems described by yml files
+
+    Args:
+    problem_dir: the path to the folder of problems
+
+    Returns:
+    problems: list of dictionaries describing each problem
+    """
+    problems = []
+
+    for sub_folder_name in os.listdir(problem_dir):
+        folder = os.path.join(problem_dir, sub_folder_name)
+        for file in os.listdir(folder):
+            new_file = os.path.join(folder, file)
+            with open(new_file) as f:
+                text = f.read()
+                data = load(text)
+                m = re.match("\((.*), (.*)\)", data["Attributes"]["window_size"])
+                data["Attributes"]["window_size"] = (int(m.group(1)), int(m.group(2)))
+                problems += [data]
 
     return problems
 
@@ -175,7 +229,6 @@ def get_problems(problem_dir):
     for problem in problems:
         problem['Input'] = []
         problem['Output'] = []
-        aux = []
         for (x, y) in [('A', 'Input'), ('1', 'Output')]:
             # for every input window, desbribed by letter A-C,
             # and for every output window, described by numbers 1-6,
@@ -189,9 +242,43 @@ def get_problems(problem_dir):
                     for _ in range(5):
                         SDR += [x]
                 problem[y].append(np.array(SDR))
-                aux += [np.sum(SDR)]
                 index += 1
         problem['Input'] = np.array(problem['Input'])
         problem['Output'] = np.array(problem['Output'])
+
+    return problems
+
+
+def get_yml_problems(problem_dir):
+    """
+    Get the pre-processed  problems
+
+    Args:
+    problem_dir: path to the folder of problems
+
+    Returns: a list of dictionaries describing the problems
+    """
+
+    problems = read_yml_problems(problem_dir)
+    problem_attributes = get_unique_attributes(problems)
+    print(len(problem_attributes.keys()))
+    print(problem_attributes)
+    SDRs = []
+
+    for problem in problems:
+        new_input = []
+        new_output = []
+        for (name, container) in [('Input', new_input), ('Output', new_output)]:
+            for figure in problem[name]:
+                new_SDR = []
+                create_SDR(figure, problem_attributes, new_SDR)
+                SDR = []
+                for x in new_SDR:
+                    for _ in range(5):
+                        SDR += [x]
+                container.append(np.array(SDR))
+
+        problem['Input'] = np.array(new_input)
+        problem['Output'] = np.array(new_output)
 
     return problems

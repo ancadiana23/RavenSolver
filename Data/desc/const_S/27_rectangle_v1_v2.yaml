@@ -1,0 +1,81 @@
+Attributes:
+  title: 27_rectangle_v1_v2
+  type: 2x2
+  result: 6
+  window_size: (75, 75)
+Input:
+  - fig:
+      id: 1
+      fill:
+        - vertical_half_1
+      shape: rectangle
+      line: 1
+      column: 1
+      size: S
+  - fig:
+      id: 1
+      fill:
+        - vertical_half_2
+      shape: rectangle
+      line: 1
+      column: 1
+      size: S
+  - fig:
+      id: 1
+      fill:
+        - vertical_half_1
+      shape: rectangle
+      line: 1
+      column: 1
+      size: S
+
+Output:
+  - fig:
+      id: 1
+      fill:
+        - vertical_half_2
+      shape: square
+      line: 1
+      column: 1
+      size: S
+  - fig:
+      id: 1
+      fill:
+        - vertical_half_2
+      shape: circle
+      line: 1
+      column: 1
+      size: S
+  - fig:
+      id: 1
+      fill:
+        - vertical_half_2
+      shape: triangle
+      line: 1
+      column: 1
+      size: S
+  - fig:
+      id: 1
+      fill:
+        - vertical_half_1
+      shape: rectangle
+      line: 1
+      column: 1
+      size: S
+  - fig:
+      id: 1
+      fill:
+        - vertical_half_2
+      shape: triangle
+      rotation: 180
+      line: 1
+      column: 1
+      size: S
+  - fig:
+      id: 1
+      fill:
+        - vertical_half_2
+      shape: rectangle
+      line: 1
+      column: 1
+      size: S

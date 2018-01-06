@@ -1,6 +1,7 @@
 from parse_images import get_windows, get_problems
 import math
 import numpy as np
+import os
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
@@ -105,8 +106,13 @@ class Encoder:
 
 
 if __name__ == '__main__':
-    folder_name = 'Data/Problems'
-    problems = get_problems(folder_name)
+    folder_name = 'Data/raw'
+    problems = []
+    for sub_folder in os.listdir(folder_name):
+        f = os.path.join(folder_name, sub_folder)
+        problems += get_problems(f)
+    #folder_name = 'Data/Problems'
+    #problems = get_problems(folder_name)
     input_windows = get_windows(problems)
     (num_windows, height, width) = input_windows.shape
     '''

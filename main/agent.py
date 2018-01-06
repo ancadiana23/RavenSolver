@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 from argparse import ArgumentParser
 from nupic.algorithms.temporal_memory import TemporalMemory as TM
@@ -7,6 +8,7 @@ from nupic.algorithms.spatial_pooler import SpatialPooler
 
 import parse_images
 import read_symbolic_problems
+
 
 
 def sp_compute(layer, input_data, learn=True):
@@ -156,7 +158,7 @@ def test(layers, problems, write_output):
         layers[-1][0].reset()
 
         if write_output:
-            write_windows('./output/htm/4/' + str(i) + '.txt', problems[i], predict)
+            write_windows('./output/' + str(i) + '.txt', problems[i], predict)
 
     print(correct_predictions)
     print(num_correct_predictions, len(correct_predictions))
@@ -199,7 +201,7 @@ def test_2_windows(layers, problems, write_output):
         layers[-1][0].reset()
 
         if write_output:
-            write_windows('./output/htm/2/' + str(i) + '.txt', problems[i], predict)
+            write_windows('./output/' + str(i) + '.txt', problems[i], predict)
 
     print(correct_predictions)
     print(num_correct_predictions, len(correct_predictions))
@@ -207,8 +209,13 @@ def test_2_windows(layers, problems, write_output):
 
 
 def init_imgs(write_output):
-    folder_name = 'Data/Problems'
+    folder_name = 'Test_data'
+    problems = []
+    #for sub_folder in os.listdir(folder_name):
+    #    f = os.path.join(folder_name, sub_folder)
+    #    problems += parse_images.get_problems(f)
     problems = parse_images.get_problems(folder_name)
+    print(len(problems))
 
     for problem in problems:
         problem['Input'] = problem['Input'].reshape((3, -1))
@@ -218,7 +225,6 @@ def init_imgs(write_output):
     num_cols1 = len(problems[0]['Input'][0])
     tm_cols = num_cols1
     layers = []
-
     if not write_output:
         num_cols2 = num_cols1 / 2
         num_cols3 = num_cols2 / 2
@@ -243,13 +249,14 @@ def init_imgs(write_output):
                 pamLength=10)
 
     layers += [(bckTM, bk_tm_compute)]
-
     return (layers, problems)
 
 
 def init_sdrs():
-    folder_name = 'Data/Problems_sdr'
-    problems = parse_images.get_problems(folder_name)
+    folder_name = 'Data/encoded'
+    for sub_folder in range(len(os.listdir(folder_name))):
+        f = os.path.join(folder_name, sub_folder)
+        problems += parse_images.get_problems(f)
 
     for problem in problems:
         assert problem['SDRs'].shape == (9, 32, 32)
@@ -269,10 +276,12 @@ def init_sdrs():
 
 
 def init_symbolic():
-    folder_name = 'Data/Problems_txt'
-    problems = read_symbolic_problems.get_problems(folder_name)
+    folder_name = 'Data/desc'
+    problems = read_symbolic_problems.get_yml_problems(folder_name)
+    print(len(problems))
 
     num_cols = len(problems[0]['Input'][0])
+    print(num_cols)
     bckTM = BTM(numberOfCols=num_cols, cellsPerColumn=15,
             initialPerm=0.5, connectedPerm=0.5,
             minThreshold=10, newSynapseCount=10,
@@ -294,8 +303,11 @@ def main(args):
         (layers, problems) = init_symbolic()
 
     if args.ex == 'memorize':
+        print("train")
         train(layers, problems)
+        print("test")
         test(layers, problems, args.write_pred)
+        print("done")
 
     elif args.ex == 'solve':
         if args.app =='4':

@@ -1,0 +1,82 @@
+Attributes:
+  title: 16_const_triangle_h2
+  type: 2x2
+  result: 3
+  window_size: (75, 75)
+Input:
+  - fig:
+      id: 1
+      fill:
+        - horizontal_half_2
+      shape: triangle
+      line: center
+      column: center
+      size: 3
+  - fig:
+      id: 1
+      fill:
+        - horizontal_half_2
+      shape: triangle
+      line: center
+      column: center
+      size: 3
+  - fig:
+      id: 1
+      fill:
+        - horizontal_half_2
+      shape: triangle
+      line: center
+      column: center
+      size: 3
+
+Output:
+  - fig:
+      id: 1
+      fill:
+        - horizontal_half_2
+      shape: square
+      line: center
+      column: center
+      size: 3
+  - fig:
+      id: 1
+      fill:
+        - horizontal_half_2
+      shape: circle
+      line: center
+      column: center
+      size: 3
+  - fig:
+      id: 1
+      fill:
+        - horizontal_half_2
+      shape: triangle
+      line: center
+      column: center
+      size: 3
+  - fig:
+      id: 1
+      fill:
+        - horizontal_half_2
+      shape: rectangle
+      line: center
+      column: center
+      size: 3
+  - fig:
+      id: 1
+      fill:
+        - horizontal_half_2
+      shape: triangle
+      rotation: 180
+      line: center
+      column: center
+      size: 3
+  - fig:
+      id: 1
+      fill:
+        - horizontal_half_2
+      shape: rectangle
+      rotation: 90
+      line: center
+      column: center
+      size: 3

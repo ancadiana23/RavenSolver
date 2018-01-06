@@ -278,9 +278,9 @@ def get_problems(folder_name):
     """
 
     problems = []
-    for i in range(len(os.listdir(folder_name))):
+    for file_name in os.listdir(folder_name):
         # for every file in the folder
-        file_name = '%d.txt' % i
+        #file_name = '%d.txt' % i
         problem = {}
         with open(os.path.join(folder_name, file_name)) as f:
             lines = f.read().split('\n')

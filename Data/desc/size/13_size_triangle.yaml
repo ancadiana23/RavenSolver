@@ -1,0 +1,82 @@
+Attributes:
+  title: 13_size_triangle
+  type: 2x2
+  result: 3
+  window_size: (75, 75)
+Input:
+  - fig:
+      id: 1
+      fill:
+        - none
+      shape: triangle
+      line: 1
+      column: 1
+      size: L
+  - fig:
+      id: 1
+      fill:
+        - none
+      shape: triangle
+      line: 1
+      column: 1
+      size: M
+  - fig:
+      id: 1
+      fill:
+        - none
+      shape: triangle
+      line: 1
+      column: 1
+      size: L
+
+Output:
+  - fig:
+      id: 1
+      fill:
+        - none
+      shape: square
+      line: 1
+      column: 1
+      size: M
+  - fig:
+      id: 1
+      fill:
+        - none
+      shape: circle
+      line: 1
+      column: 1
+      size: M
+  - fig:
+      id: 1
+      fill:
+        - none
+      shape: triangle
+      line: 1
+      column: 1
+      size: M
+  - fig:
+      id: 1
+      fill:
+        - none
+      shape: rectangle
+      line: 1
+      column: 1
+      size: M
+  - fig:
+      id: 1
+      fill:
+        - none
+      shape: triangle
+      rotation: 180
+      line: 1
+      column: 1
+      size: M
+  - fig:
+      id: 1
+      fill:
+        - none
+      shape: rectangle
+      rotation: 90
+      line: 1
+      column: 1
+      size: M
