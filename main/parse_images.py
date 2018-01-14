@@ -238,7 +238,7 @@ def write_problems_with_sdrs(input_folder, output_folder):
     problems = get_problems(input_folder)
     for i in range(len(problems)):
         # write the original form of the problem in the new file
-        out_file = output_folder + '/' + str(i) + '.txt'
+        out_file = os.path.join(output_folder, problems[i]['Attributes']['title'] + '.txt')
         write_problem(problems[i], out_file)
 
         # create and write to the new file SDRs for all the windows in the problem
@@ -376,5 +376,9 @@ if __name__ == '__main__':
             write_sdr_csv(problem, csv_file)
 
     if args.sdrs:
-        write_problems_with_sdrs(output_dir, '../Problems_sdr')
+        folder_name = os.path.join('Data', 'raw')
+        for sub_folder in os.listdir(folder_name):
+            in_folder = os.path.join(folder_name, sub_folder)
+            out_folder = os.path.join('Data', 'encoded', sub_folder)
+            write_problems_with_sdrs(in_folder, out_folder)
 

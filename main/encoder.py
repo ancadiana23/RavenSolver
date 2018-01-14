@@ -92,7 +92,7 @@ class Encoder:
         errs = []
         max_learning_rate = 0.0001
         min_learning_rate = 0.00001
-        max_epochs = 100
+        max_epochs = 10
 
         for epoch in range(max_epochs):
             learning_rate = max_learning_rate + (min_learning_rate - max_learning_rate) * (epoch + 1)/max_epochs
@@ -111,29 +111,32 @@ if __name__ == '__main__':
     for sub_folder in os.listdir(folder_name):
         f = os.path.join(folder_name, sub_folder)
         problems += get_problems(f)
+    print(len(problems))
     #folder_name = 'Data/Problems'
     #problems = get_problems(folder_name)
     input_windows = get_windows(problems)
     (num_windows, height, width) = input_windows.shape
+    print("Get Windows Done")
     '''
     for win in input_windows:
         print(np.sum(win) * 100 / (height * width))
     '''
     enc = Encoder(height * width)
+    print("Encoder Done")
     errs = enc.train(input_windows)
-
+    print("Train Done")
     print("Show decoded data")
     with open('res.txt', 'w+') as f:
         for win in input_windows:
             encoded = enc.encode(win.reshape((1, height, width, 1)))
             m = np.mean(encoded)
-            print(np.sum(encoded))
+            #print(np.sum(encoded))
             encoded = np.array([[int(x >= m) for x in encoded[0]]])
             output = enc.decode(encoded)
-            print(np.sum(encoded))
-            print('Sparsity ', float(np.sum(encoded) * 100) / encoded.shape[1])
+            #print(np.sum(encoded))
+            #print('Sparsity ', float(np.sum(encoded) * 100) / encoded.shape[1])
             m = np.mean(win)
-            for i in range(82):
+            for i in range(height):
                 line = ''.join([str(int(x >= m)) for x in win[i]])
                 f.write(line + '\n')
             f.write('\n\n')
@@ -145,7 +148,7 @@ if __name__ == '__main__':
             f.write('\n\n\n')
     enc.sess.close()
 
-    #errs = [(float(err) ** 0.5) * 100 / (num_windows * 82 * 82)  for err in errs]
+    #errs = [(float(err) ** 0.5) * 100 / (num_windows * height * width)  for err in errs]
     plt.plot(range(len(errs)), errs, color='blue')
     plt.savefig('learning.png')
 
