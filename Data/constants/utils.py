@@ -108,7 +108,7 @@ def main(size, file_name):
 	text_file = open(folder + "constants_" + file_name, "w+")
 	text_file.write(str(size) + '\n\n')
 	for (name, func, x) in [('circle', circle, math.ceil(size / 2.5)), ('square', square, math.ceil(size / 7)), \
-							('rectangle', rectangle, math.ceil(size / 13)), ('triangle', triangle, math.ceil(size / 15))]:
+							('rectangle', rectangle, math.ceil(size / 13)), ('triangle', triangle, math.ceil(size / 20))]:
 		fig = [[0 for _ in range(size)] for _ in range(size)]
 		fig = func(fig, x)
 		write_fig(fig, text_file, name)

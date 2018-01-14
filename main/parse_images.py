@@ -226,7 +226,13 @@ def write_problems_with_sdrs(input_folder, output_folder):
 
     # get all the windows from the problems in the folder
     # in order to train the encoder
-    problems = get_problems(input_folder)
+    #problems = get_problems(input_folder)
+    folder_name = 'Data/raw'
+    problems = []
+    for sub_folder in os.listdir(folder_name):
+        f = os.path.join(folder_name, sub_folder)
+        problems += parse_images.get_problems(f)
+
     input_windows = get_windows(problems)
     (num_windows, height, width) = input_windows.shape
 

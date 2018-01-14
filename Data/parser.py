@@ -42,10 +42,12 @@ def parse_window(window, height, width, constants):
         padding_column = int((height - size[1]) / 2.0)
         pos = (window[figure]['line'] * padding_line,
                window[figure]['column'] * padding_column)
+
         for i in range(len(new_fig)):
             start = (pos[0] + i) * width + pos[1]
             end = start + len(new_fig[i])
             result[start : end] += new_fig[i]
+
     return result
 
 

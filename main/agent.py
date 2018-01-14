@@ -209,12 +209,13 @@ def test_2_windows(layers, problems, write_output):
 
 
 def init_imgs(write_output):
-    folder_name = 'Test_data'
+    #problems = parse_images.get_problems(folder_name)
+
+    folder_name = 'Data/raw'
     problems = []
-    #for sub_folder in os.listdir(folder_name):
-    #    f = os.path.join(folder_name, sub_folder)
-    #    problems += parse_images.get_problems(f)
-    problems = parse_images.get_problems(folder_name)
+    for sub_folder in os.listdir(folder_name):
+        f = os.path.join(folder_name, sub_folder)
+        problems += parse_images.get_problems(f)
     print(len(problems))
 
     for problem in problems:

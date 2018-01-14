@@ -1,0 +1,206 @@
+Attributes:
+  title: 16_test
+  type: 2x2
+  result: 1
+  window_size: (75, 75)
+Input:
+  - fig1:
+      id: 1
+      shape: triangle
+      rotation: 0
+      line: 1
+      column: 0
+      fill:
+        - none
+      size: S
+    fig2:
+      id: 2
+      shape: triangle
+      rotation: 0
+      line: 1
+      column: 2
+      fill:
+        - none
+      size: S
+  - fig1:
+      id: 1
+      shape: triangle
+      rotation: 0
+      line: 1
+      column: 0
+      fill:
+        - none
+      size: S
+    fig2:
+      id: 2
+      shape: triangle
+      rotation: 180
+      line: 1
+      column: 1
+      fill:
+        - none
+      size: S
+    fig3:
+      id: 3
+      shape: triangle
+      rotation: 0
+      line: 1
+      column: 2
+      fill:
+        - none
+      size: S
+  - fig1:
+      id: 1
+      shape: triangle
+      rotation: 180
+      line: 1
+      column: 0
+      fill:
+        - none
+      size: S
+    fig2:
+      id: 2
+      shape: triangle
+      rotation: 180
+      line: 1
+      column: 2
+      fill:
+        - none
+      size: S
+
+Output:
+  - fig1:
+      id: 1
+      shape: triangle
+      rotation: 180
+      line: 1
+      column: 0
+      fill:
+        - none
+      size: S
+    fig2:
+      id: 2
+      shape: triangle
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - none
+      size: S
+    fig3:
+      id: 3
+      shape: triangle
+      rotation: 180
+      line: 1
+      column: 2
+      fill:
+        - none
+      size: S
+  - fig:
+      id: 1
+      shape: triangle
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - full
+      size: S
+  - fig1:
+      id: 1
+      shape: circle
+      rotation: 0
+      line: 1
+      column: 0
+      fill:
+        - none
+      size: S
+    fig2:
+      id: 2
+      shape: circle
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - none
+      size: S
+    fig3:
+      id: 3
+      shape: circle
+      rotation: 0
+      line: 1
+      column: 2
+      fill:
+        - none
+      size: S
+  - fig1:
+      id: 1
+      shape: square
+      rotation: 0
+      line: 0
+      column: 0
+      fill:
+        - none
+      size: S
+    fig2:
+      id: 2
+      shape: square
+      rotation: 0
+      line: 2
+      column: 2
+      fill:
+        - none
+      size: S
+  - fig1:
+      id: 1
+      shape: triangle
+      rotation: 180
+      line: 1
+      column: 0
+      fill:
+        - none
+      size: S
+    fig2:
+      id: 2
+      shape: triangle
+      rotation: 180
+      line: 1
+      column: 1
+      fill:
+        - none
+      size: S
+    fig3:
+      id: 3
+      shape: triangle
+      rotation: 180
+      line: 1
+      column: 2
+      fill:
+        - none
+      size: S
+  - fig1:
+      id: 1
+      shape: square
+      rotation: 0
+      line: 1
+      column: 0
+      fill:
+        - none
+      size: S
+    fig2:
+      id: 2
+      shape: square
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - none
+      size: S
+    fig3:
+      id: 3
+      shape: square
+      rotation: 0
+      line: 1
+      column: 2
+      fill:
+        - none
+      size: S
