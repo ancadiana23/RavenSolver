@@ -2,9 +2,11 @@ import parse_images
 import read_symbolic_problems
 import math
 import numpy as np
-from argparse import ArgumentParser
+import os
 import tensorflow as tf
 import matplotlib.pyplot as plt
+
+from argparse import ArgumentParser
 
 
 class Agent:
@@ -223,17 +225,27 @@ def reshape_conv(problems):
 
 def main(args):
     if args.data == 'imgs':
-        folder_name = 'Data/Problems'
-        problems = parse_images.get_problems(folder_name)
+        #folder_name = 'Data/Problems'
+        #problems = parse_images.get_problems(folder_name)
+        folder_name = 'Data/raw'
+        problems = []
+        for sub_folder in os.listdir(folder_name):
+            f = os.path.join(folder_name, sub_folder)
+            problems += parse_images.get_problems(f)
     elif args.data == 'sdrs':
-        folder_name = 'Data/Problems_sdr'
-        problems = parse_images.get_problems(folder_name)
+        #folder_name = 'Data/Problems_sdr'
+        #problems = parse_images.get_problems(folder_name)
+        folder_name = 'Data/encoded'
+        for sub_folder in range(len(os.listdir(folder_name))):
+            f = os.path.join(folder_name, sub_folder)
+            problems += parse_images.get_problems(f)
     elif args.data == 'symbolic':
         if args.nn == 'conv':
             print("Please use the fully connected network for this type of data.")
             return
-        folder_name = 'Data/Problems_txt'
-        problems = read_symbolic_problems.get_problems(folder_name)
+        folder_name = 'Data/desc'
+        problems = read_symbolic_problems.get_yml_problems(folder_name)
+    print(len(problems))
 
 
     if args.nn == 'fc':

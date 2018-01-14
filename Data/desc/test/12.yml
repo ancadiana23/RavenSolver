@@ -1,0 +1,90 @@
+Attributes:
+  title: 12_test
+  type: 2x2
+  result: 6
+  window_size: (75, 75)
+Input:
+  - fig:
+      id: 1
+      shape: triangle
+      rotation: 180
+      line: 1
+      column: 1
+      fill:
+        - none
+      size: M
+  - fig:
+      id: 1
+      shape: square
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - vertical_half_2
+      size: M
+  - fig:
+      id: 1
+      shape: triangle
+      rotation: 180
+      line: 1
+      column: 1
+      fill:
+        - horizontal_half_2
+      size: M
+
+Output:
+  - fig:
+      id: 1
+      shape: triangle
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - vertical_half_2
+      size: M
+  - fig:
+      id: 1
+      shape: circle
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - none
+      size: M
+  - fig:
+      id: 1
+      shape: rectangle
+      rotation: 90
+      line: 1
+      column: 1
+      fill:
+        - horizontal_half_2
+      size: M
+  - fig:
+      id: 1
+      shape: square
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - full
+      size: M
+  - fig:
+      id: 1
+      shape: triangle
+      rotation: 180
+      line: 1
+      column: 1
+      fill:
+        - full
+      size: M
+  - fig:
+      id: 1
+      shape: square
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - horizontal_half_2
+        - vertical_half_2
+      size: M

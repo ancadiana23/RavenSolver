@@ -1,0 +1,89 @@
+Attributes:
+  title: 4_test
+  type: 2x2
+  result: 5
+  window_size: (75, 75)
+Input:
+  - fig:
+      id: 1
+      shape: square
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - none
+      size: L
+  - fig:
+      id: 1
+      shape: square
+      rotation: 45
+      line: 1
+      column: 1
+      fill:
+        - none
+      size: L
+  - fig:
+      id: 1
+      shape: square
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - full
+      size: L
+
+Output:
+  - fig:
+      id: 1
+      shape: circle
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - none
+      size: L
+  - fig:
+      id: 1
+      shape: square
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - full
+      size: L
+  - fig:
+      id: 1
+      shape: triangle
+      rotation: 180
+      line: 0
+      column: 0
+      fill:
+        - none
+      size: L
+  - fig:
+      id: 1
+      shape: rectangle
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - horizontal_half_2
+      size: L
+  - fig:
+      id: 1
+      shape: square
+      rotation: 45
+      line: 1
+      column: 1
+      fill:
+        - full
+      size: L
+  - fig:
+      id: 1
+      shape: triangle
+      rotation: 0
+      line: 1
+      column: 1
+      fill:
+        - none
+      size: L

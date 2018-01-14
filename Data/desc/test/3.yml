@@ -1,0 +1,81 @@
+Attributes:
+  title: 3_test
+  type: 2x2
+  result: 6
+  window_size: (75, 75)
+Input:
+  - fig:
+      id: 1
+      shape: circle
+      line: 0
+      column: 0
+      fill:
+        - full
+      size: S
+  - fig:
+      id: 1
+      shape: triangle
+      line: 0
+      column: 2
+      fill:
+        - none
+      size: S
+  - fig:
+      id: 1
+      shape: circle
+      line: 2
+      column: 0
+      fill:
+        - full
+      size: S
+
+Output:
+  - fig:
+      id: 1
+      shape: triangle
+      line: 0
+      column: 2
+      fill:
+        - full
+      size: S
+  - fig:
+      id: 1
+      shape: square
+      line: 2
+      column: 2
+      fill:
+        - none
+      size: S
+  - fig:
+      id: 1
+      shape: triangle
+      rotation: 180
+      line: 2
+      column: 2
+      fill:
+        - none
+      size: S
+  - fig:
+      id: 1
+      shape: triangle
+      line: 1
+      column: 1
+      fill:
+        - none
+      size: L
+  - fig:
+      id: 1
+      shape: circle
+      line: 2
+      column: 0
+      fill:
+        - full
+      size: S
+  - fig:
+      id: 1
+      shape: triangle
+      line: 2
+      column: 2
+      fill:
+        - none
+      size: S
