@@ -168,12 +168,3 @@ Output:
       fill:
         - none
       size: M
-  - fig:
-      id: 1
-      shape: square
-      rotation: 0
-      line: 1
-      column: 1
-      fill:
-        - none
-      size: M
