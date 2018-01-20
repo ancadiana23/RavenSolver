@@ -47,6 +47,7 @@ def parse_window(window, height, width, constants):
             start = (pos[0] + i) * width + pos[1]
             end = start + len(new_fig[i])
             result[start : end] += new_fig[i]
+    result = [min(x, 1) for x in result]
     return result
 
 
