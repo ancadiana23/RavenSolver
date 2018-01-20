@@ -226,12 +226,10 @@ def write_problems_with_sdrs(input_folder, output_folder):
 
     # get all the windows from the problems in the folder
     # in order to train the encoder
-    #problems = get_problems(input_folder)
-    folder_name = 'Data/raw'
     problems = []
-    for sub_folder in os.listdir(folder_name):
-        f = os.path.join(folder_name, sub_folder)
-        problems += parse_images.get_problems(f)
+    for sub_folder in os.listdir(input_folder):
+        f = os.path.join(input_folder, sub_folder)
+        problems += get_problems(f)
 
     input_windows = get_windows(problems)
     (num_windows, height, width) = input_windows.shape
@@ -239,41 +237,43 @@ def write_problems_with_sdrs(input_folder, output_folder):
     # initialize and train the encoder
     enc = encoder.Encoder(height * width)
     errs = enc.train(input_windows)
-
+    
+    problems = []
     # get all the problems from the folder in order to create the SDRs
-    problems = get_problems(input_folder)
-    for i in range(len(problems)):
-        # write the original form of the problem in the new file
-        out_file = os.path.join(output_folder, problems[i]['Attributes']['title'] + '.txt')
-        write_problem(problems[i], out_file)
+    for sub_folder in os.listdir(input_folder):
+        problems = get_problems(os.path.join(input_folder, sub_folder))
+        for i in range(len(problems)):
+            # write the original form of the problem in the new file
+            out_file = os.path.join(output_folder, sub_folder, problems[i]['Attributes']['title'] + '.txt')
+            write_problem(problems[i], out_file)
 
-        # create and write to the new file SDRs for all the windows in the problem
-        with open(out_file, 'a') as f:
-            f.write('== SDRs ==\n')
-            # for every window in the problem
-            for win in np.concatenate((problems[i]['Input'], problems[i]['Output'])):
-                # create SDR by encoding the window and then converting the list of float
-                # values to 1s and 0s
-                encoded = enc.encode(win.reshape((1, height, width, 1)))
-                m = np.mean(encoded)
-                encoded = (encoded >= m).astype(int)
+            # create and write to the new file SDRs for all the windows in the problem
+            with open(out_file, 'a') as f:
+                f.write('== SDRs ==\n')
+                # for every window in the problem
+                for win in np.concatenate((problems[i]['Input'], problems[i]['Output'])):
+                    # create SDR by encoding the window and then converting the list of float
+                    # values to 1s and 0s
+                    encoded = enc.encode(win.reshape((1, height, width, 1)))
+                    m = np.mean(encoded)
+                    encoded = (encoded >= m).astype(int)
 
-                # write the SDR to the file
-                size = int(len(encoded[0]) ** 0.5)
-                for line in encoded.reshape((size, size)):
-                    f.write(''.join([str(x) for x in line]) + '\n')
-                f.write('\n')
+                    # write the SDR to the file
+                    size = int(len(encoded[0]) ** 0.5)
+                    for line in encoded.reshape((size, size)):
+                        f.write(''.join([str(x) for x in line]) + '\n')
+                    f.write('\n')
 
-                print('Sparsity ', float(np.sum(encoded) * 100) / encoded.shape[1])
+                    print('Sparsity ', float(np.sum(encoded) * 100) / encoded.shape[1])
 
-                # decode the SDR
-                decoded = enc.decode(encoded)
-                m = np.mean(decoded)
-                decoded = (decoded >= m).astype(int)
+                    # decode the SDR
+                    decoded = enc.decode(encoded)
+                    m = np.mean(decoded)
+                    decoded = (decoded >= m).astype(int)
 
-                # print the similarity between the input and the output
-                print(np.sum(win == decoded.reshape(win.shape)) * 100.0 / (height * width))
-                print("---------------")
+                    # print the similarity between the input and the output
+                    print(np.sum(win == decoded.reshape(win.shape)) * 100.0 / (height * width))
+                    print("---------------")
 
 
 def get_problems(folder_name):
@@ -382,9 +382,14 @@ if __name__ == '__main__':
             write_sdr_csv(problem, csv_file)
 
     if args.sdrs:
+        in_folder = os.path.join('Data', 'raw')
+        out_folder = os.path.join('Data', 'encoded')
+        write_problems_with_sdrs(in_folder, out_folder)
+        '''
         folder_name = os.path.join('Data', 'raw')
         for sub_folder in os.listdir(folder_name):
             in_folder = os.path.join(folder_name, sub_folder)
             out_folder = os.path.join('Data', 'encoded', sub_folder)
             write_problems_with_sdrs(in_folder, out_folder)
+        '''
 
