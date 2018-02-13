@@ -85,8 +85,6 @@ class Agent:
         length: length of the input
         """
 
-        rows = int(length ** 0.5)
-
         # input placeholder
         self.X = tf.placeholder(tf.float32, length)
         self.Y = tf.placeholder(tf.float32, length)
@@ -224,11 +222,11 @@ def reshape_conv(problems):
 
 
 def main(args):
+    problems = []
     if args.data == 'imgs':
         #folder_name = 'Data/Problems'
         #problems = parse_images.get_problems(folder_name)
         folder_name = 'Data/raw'
-        problems = []
         for sub_folder in os.listdir(folder_name):
             f = os.path.join(folder_name, sub_folder)
             problems += parse_images.get_problems(f)
@@ -236,7 +234,7 @@ def main(args):
         #folder_name = 'Data/Problems_sdr'
         #problems = parse_images.get_problems(folder_name)
         folder_name = 'Data/encoded'
-        for sub_folder in range(len(os.listdir(folder_name))):
+        for sub_folder in os.listdir(folder_name):
             f = os.path.join(folder_name, sub_folder)
             problems += parse_images.get_problems(f)
     elif args.data == 'symbolic':
@@ -245,7 +243,6 @@ def main(args):
             return
         folder_name = 'Data/desc'
         problems = read_symbolic_problems.get_yml_problems(folder_name)
-    print(len(problems))
 
 
     if args.nn == 'fc':

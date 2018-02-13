@@ -254,8 +254,9 @@ def init_imgs(write_output):
 
 
 def init_sdrs():
-    folder_name = 'Data/encoded'
-    for sub_folder in range(len(os.listdir(folder_name))):
+    problems = []
+    folder_name = os.path.join('Data', 'encoded')
+    for sub_folder in os.listdir(folder_name):
         f = os.path.join(folder_name, sub_folder)
         problems += parse_images.get_problems(f)
 
@@ -312,12 +313,12 @@ def main(args):
 
     elif args.ex == 'solve':
         if args.app =='4':
-            train_windows(layers, problems, 4)
+            #train_windows(layers, problems, 4)
             train_input(layers, problems, [0, 1, 0, 1])
             test(layers, problems, args.write_pred)
 
         if args.app == '2':
-            train_windows(layers, problems, 2)
+            #train_windows(layers, problems, 2)
             train_input(layers, problems, [0, 1])
             test_2_windows(layers, problems, args.write_pred)
 
